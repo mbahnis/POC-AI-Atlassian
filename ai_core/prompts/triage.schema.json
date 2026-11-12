@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "properties": {
+    "qualite_ticket": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "1 = inexploitable, 5 = prêt à développer"
+    },
+    "titre_reformule": {
+      "type": "string",
+      "description": "Titre clair et précis, ou le titre actuel s'il est déjà bon"
+    },
+    "resume": {
+      "type": "string",
+      "description": "Le problème ou le besoin en 1 à 2 phrases"
+    },
+    "priorite": {
+      "type": "string",
+      "enum": ["Critique", "Haute", "Moyenne", "Basse"]
+    },
+    "justification_priorite": {
+      "type": "string",
+      "description": "Une phrase"
+    },
+    "composant": {
+      "type": ["string", "null"],
+      "description": "Un des composants possibles, ou null si impossible à déterminer"
+    },
+    "labels": {
+      "type": "array",
+      "items": {"type": "string"},
+      "maxItems": 3,
+      "description": "0 à 3 labels parmi les labels possibles"
+    },
+    "doublons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cle": {"type": "string"},
+          "confiance": {"type": "string", "enum": ["forte", "moyenne", "faible"]},
+          "raison": {"type": "string"}
+        },
+        "required": ["cle", "confiance", "raison"]
+      }
+    },
+    "criteres_acceptation": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "questions_a_poser": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": [
+    "qualite_ticket", "titre_reformule", "resume", "priorite", "justification_priorite",
+    "composant", "labels", "doublons", "criteres_acceptation", "questions_a_poser"
+  ]
+}

@@ -11,6 +11,7 @@ Chaque choix structurant du POC est consigné dans une fiche courte : le context
 | [0005](0005-prompts-versionnes.md) | Prompts versionnés dans Git | Acceptée |
 | [0006](0006-donnees-demo-reinitialisables.md) | Données de démo fictives et réinitialisables | Acceptée |
 | [0007](0007-triage-propose-ne-modifie-pas.md) | Le triage IA propose en commentaire, il ne modifie pas le ticket | Acceptée |
+| [0008](0008-sorties-structurees.md) | Sorties structurées garanties par l'API (tool use) | Acceptée |
 
 ## Modèle de fiche
 

@@ -97,3 +97,17 @@ def test_adf_vers_texte():
             {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "a"}]}]}]},
     ]}
     assert adf_to_text(node) == "ligne 1\n- a"
+
+
+def test_schema_de_sortie_transmis_au_fournisseur(monkeypatch, tmp_path):
+    _, provider = run_triage(monkeypatch, tmp_path, FakeJira(), dry_run=True)
+    assert provider.last_schema is not None
+    assert "priorite" in provider.last_schema["required"]
+
+
+def test_schema_valide_la_reponse_type():
+    import jsonschema
+
+    from ai_core.prompts import load_prompt
+
+    jsonschema.validate(RESULT, load_prompt("triage").output_schema)

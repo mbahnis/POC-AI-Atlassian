@@ -119,7 +119,8 @@ def triage(key: str, dry_run: bool = False, force: bool = False, jira: JiraClien
         },
         caller=f"triage:{key}",
     )
-    result = extract_json(response.text)
+    # Réponse structurée garantie par l'API ; extract_json reste en secours pour un fournisseur sans ce mécanisme
+    result = response.data if response.data is not None else extract_json(response.text)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
     if dry_run:

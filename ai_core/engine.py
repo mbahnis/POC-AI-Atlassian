@@ -37,7 +37,9 @@ def ask(
         user_text, masked_counts = mask(user_text)
 
     with Timer() as t:
-        response = provider.complete(prompt.system, user_text, model, settings.max_tokens)
+        response = provider.complete(
+            prompt.system, user_text, model, settings.max_tokens, output_schema=prompt.output_schema
+        )
 
     write_record(
         settings.audit_log_path,
@@ -52,6 +54,7 @@ def ask(
             "output_tokens": response.output_tokens,
             "latency_ms": t.ms,
             "masked": masked_counts,
+            "structured": prompt.output_schema is not None,
         },
     )
     return response

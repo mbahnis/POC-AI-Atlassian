@@ -15,11 +15,15 @@ class AIResponse:
     model: str
     input_tokens: int = 0
     output_tokens: int = 0
+    # Réponse structurée, remplie quand un schéma de sortie est demandé
+    data: dict | None = None
 
 
 class AIProvider(Protocol):
     name: str
 
-    def complete(self, system: str, user: str, model: str, max_tokens: int) -> AIResponse:
-        """Envoie un prompt et renvoie la réponse texte du modèle."""
+    def complete(
+        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None
+    ) -> AIResponse:
+        """Envoie un prompt. Avec output_schema, la réponse doit respecter ce schéma JSON (dans .data)."""
         ...
