@@ -1,0 +1,84 @@
+# Jeu de données de démo, 100 % fictif (boutique en ligne imaginaire "Maison Lumen").
+# Chaque ticket reçoit le label "poc-demo" : c'est ce label qui permet au script
+# de remise à zéro de ne toucher qu'aux tickets de démo.
+#
+# role : à quoi sert le ticket dans le fil rouge (documentation pour les présentateurs)
+
+label: poc-demo
+
+tickets:
+  - id: paiement-detaille
+    type: Bug
+    role: "Ticket existant bien rédigé. Sert de doublon détecté par le triage IA (brique 1)."
+    summary: "Erreur 500 au paiement par carte lors de la validation du panier"
+    description: |
+      Depuis la mise en production de la v1.4.1, une partie des paiements par carte échoue.
+      Etapes : ajouter un article au panier, valider, payer par carte Visa.
+      Résultat : page d'erreur 500, la commande n'est pas créée.
+      Attendu : redirection vers la page de confirmation.
+      Fréquence : environ 1 paiement sur 10 d'après le support.
+
+  - id: paiement-flou
+    type: Bug
+    role: "Ticket flou typique. Démo principale du triage IA (brique 1) : reformulation, priorité, doublon."
+    summary: "ça marche pas le paiement"
+    description: |
+      les clients se plaignent ça marche pas quand ils payent. urgent !!
+      voir avec sophie.martin@maison-lumen.example elle a eu le client au tel
+
+  - id: message-erreur-bilingue
+    type: Story
+    role: "Story avec critères d'acceptation précis. Sert à la revue IA de PR contre le ticket (brique 3)."
+    summary: "Afficher un message d'erreur clair en français et en anglais quand le paiement est refusé"
+    description: |
+      En tant que client, je veux comprendre pourquoi mon paiement est refusé afin de pouvoir réessayer.
+
+      Critères d'acceptation :
+      - Le message s'affiche sous le formulaire de paiement, sans recharger la page
+      - Le message existe en français et en anglais, selon la langue du navigateur
+      - Le code de refus bancaire n'est jamais affiché au client
+      - Un lien "Réessayer" remet le formulaire à zéro
+
+  - id: export-commandes
+    type: Story
+    role: "Story correctement rédigée. Montre que l'IA ne réécrit pas ce qui est déjà bon (brique 1)."
+    summary: "Exporter les commandes du mois au format CSV depuis le back-office"
+    description: |
+      En tant que responsable logistique, je veux exporter les commandes d'un mois donné en CSV
+      afin de préparer les expéditions dans notre outil transporteur.
+
+      Critères d'acceptation :
+      - Choix du mois dans un sélecteur
+      - Colonnes : numéro de commande, date, client, adresse de livraison, montant TTC
+      - Export limité aux commandes au statut "payée"
+
+  - id: page-produit-lente
+    type: Bug
+    role: "Ticket vague sans environnement ni mesure. Le triage IA doit lister les questions à poser."
+    summary: "page produit lente"
+    description: |
+      c'est lent
+
+  - id: connexion-mobile
+    type: Bug
+    role: "Contient des données personnelles. Montre le masquage avant envoi à l'IA (gouvernance)."
+    summary: "bug login sur mobile"
+    description: |
+      Le client Paul Bernard (paul.bernard@exemple.fr, 06 12 34 56 78) n'arrive pas à se connecter depuis son iPhone.
+      Il dit que la page se recharge en boucle. Serveur concerné d'après les logs : 10.20.3.15
+
+  - id: lib-pdf-factures
+    type: Task
+    role: "Dette technique. Alimente le rapport de santé de sprint (idée complémentaire)."
+    summary: "Mettre à jour la librairie de génération des factures PDF (fin de support en décembre)"
+    description: |
+      La version actuelle de la librairie PDF ne sera plus maintenue à partir de décembre.
+      Tester la montée de version sur l'environnement de recette, vérifier le rendu des factures existantes.
+
+  - id: doublon-panier
+    type: Bug
+    role: "Second doublon partiel, pour vérifier que l'IA nuance (doublon probable vs sujet voisin)."
+    summary: "Le panier se vide après une erreur de paiement"
+    description: |
+      Après un échec de paiement, le panier du client est vide et il doit tout rajouter.
+      Constaté sur Chrome et Firefox.
