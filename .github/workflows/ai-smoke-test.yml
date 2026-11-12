@@ -1,0 +1,40 @@
+name: Smoke test IA
+
+# Lancement manuel : Actions > Smoke test IA > Run workflow.
+# Vérifie que la clé fonctionne et que le masquage s'applique avant l'envoi à Claude.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      AI_PROVIDER: anthropic
+      # Surchargeable sans toucher au code : Settings > Secrets and variables > Actions > Variables
+      AI_MODEL_FAST: ${{ vars.AI_MODEL_FAST || 'claude-haiku-5-5' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Vérifier la présence du secret
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Secret ANTHROPIC_API_KEY absent (Settings > Secrets and variables > Actions)"
+            exit 1
+          fi
+      - name: Appel à Claude
+        run: python -m scripts.smoke_test
+      - name: Publier le journal d'audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-audit-log
+          path: ai-audit.jsonl
+          if-no-files-found: ignore

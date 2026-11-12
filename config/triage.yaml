@@ -1,0 +1,25 @@
+# Référentiel propre au projet du client : c'est ce fichier qu'on adapte d'un client à l'autre.
+# L'IA ne propose que des valeurs présentes ici, ce qui évite les labels inventés.
+
+components:
+  - Paiement
+  - Panier
+  - Catalogue
+  - Compte client
+  - Back-office
+  - Facturation
+
+labels:
+  - regression
+  - securite
+  - performance
+  - mobile
+  - ux
+  - dette-technique
+  - donnees-personnelles
+
+# Label posé après le triage : évite de trier deux fois le même ticket
+triaged_label: ia-triage
+
+# Nombre maximum de tickets ouverts envoyés à l'IA pour chercher les doublons
+max_candidates: 50

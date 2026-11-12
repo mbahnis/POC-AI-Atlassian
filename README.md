@@ -55,19 +55,19 @@ flowchart LR
 
 | | |
 |---|---|
-| **Ce qu'on fait** | A la création d'un ticket, ScriptRunner envoie le contenu à Claude. L'IA propose une priorité, des labels, un composant, détecte les doublons probables et reformule en critères d'acceptation. Le résultat revient en commentaire dans le ticket. |
+| **Ce qu'on fait** | A la création d'un ticket, une règle Jira Automation (ou ScriptRunner) envoie le contenu à Claude. L'IA propose une priorité, des labels, un composant, détecte les doublons probables et reformule en critères d'acceptation. Le résultat revient en commentaire dans le ticket. |
 | **Pourquoi c'est bien** | Effet visible en quelques secondes : un ticket flou devient exploitable. |
 | **Ce que ça résout** | Tickets incomplets, qualité hétérogène, temps perdu en allers-retours et en tri manuel. |
 
 **Exemple**
 - ❌ **Avant** : ticket "ça marche pas le paiement", le chef de projet doit rappeler l'auteur pour comprendre.
-- ✅ **Après** : l'IA reformule ("Echec du paiement par carte à la validation du panier"), propose la priorité Haute, repère un doublon (PI-12) et liste les questions à poser. Validation humaine en 30 secondes.
+- ✅ **Après** : l'IA reformule ("Echec du paiement par carte à la validation du panier"), propose la priorité Haute, repère un doublon (PI-1) et liste les questions à poser. Validation humaine en 30 secondes.
 
 ### 2️⃣ Jira + CI/CD : livraison tracée de bout en bout
 
 | | |
 |---|---|
-| **Ce qu'on fait** | Un pipeline (GitHub Actions) lit la clé du ticket dans la branche ou la PR et fait avancer le statut Jira. Le statut de déploiement remonte dans Jira. A chaque release, l'IA génère les release notes depuis les PR fusionnées et les publie dans Confluence. |
+| **Ce qu'on fait** | Les statuts Jira avancent seuls grâce au natif Atlassian (GitHub for Jira + Jira Automation), sans une ligne de code. Le statut de déploiement remonte dans Jira. A chaque release, l'IA génère les release notes depuis les PR fusionnées et les publie dans Confluence. |
 | **Pourquoi c'est bien** | Zéro ressaisie : le code, le ticket et la documentation restent alignés. |
 | **Ce que ça résout** | Statuts Jira périmés, traçabilité incomplète (audit, conformité), release notes écrites à la main. |
 
@@ -120,7 +120,10 @@ flowchart LR
 - Journalisation des appels pour l'audit
 
 **Indépendance vis-à-vis du fournisseur d'IA**
-- L'appel à l'IA est isolé dans une petite fonction : changer de modèle ou de fournisseur ne remet pas en cause le reste de la solution
+- L'appel à l'IA est isolé dans un module commun (`ai_core`) : changer de modèle ou de fournisseur ne remet pas en cause le reste de la solution ([décision 0001](docs/decisions/0001-module-ia-commun.md))
+
+**Et Rovo ?**
+- Rovo, l'IA native d'Atlassian, couvre les usages standard (recherche, résumés, agents génériques). Ce POC le complète sur le sur-mesure : relier Jira à la chaîne CI/CD et à la supervision du client, avec le choix du modèle et de l'hébergement
 
 **Coût**
 - Négligeable à l'échelle d'un ticket : de l'ordre du centime avec un modèle de taille intermédiaire, bien moins avec un petit modèle
@@ -135,9 +138,11 @@ flowchart LR
 |---|---|
 | Gestion de projet | Jira Cloud |
 | Documentation | Confluence |
-| Automatisation dans Jira | ScriptRunner Cloud (Groovy) |
-| IA | Claude via l'API Anthropic (Haiku pour les tâches simples, Sonnet pour le raisonnement) |
-| CI/CD | GitHub et GitHub Actions |
+| Automatisation dans Jira | Jira Automation (natif) et ScriptRunner Cloud (Groovy) |
+| Incidents | Jira Service Management |
+| IA | Claude via l'API Anthropic (Haiku pour les tâches simples, Sonnet pour le raisonnement), derrière un module interchangeable |
+| Code | Python 3.12 |
+| CI/CD | GitHub et GitHub Actions (transposable vers GitLab CI, Azure DevOps, Jenkins) |
 | Supervision | Prometheus, Grafana ou CloudWatch (selon l'avancement) |
 
 ---
@@ -153,16 +158,44 @@ flowchart LR
 
 ---
 
+## 📂 Structure du dépôt
+
+```
+config/               Référentiel propre au client (composants, labels)
+ai_core/              Module IA commun : prompts, masquage, fournisseurs, audit
+  prompts/            Prompts versionnés (un fichier par usage)
+  providers/          Fournisseurs IA interchangeables (Anthropic, faux fournisseur de test)
+integrations/         Adaptateurs vers les outils (Jira, puis Confluence, GitHub...)
+scripts/              Scripts exécutables (smoke test, remise à zéro de la démo)
+demo/                 Données de démo fictives
+docs/
+  architecture.md     Schéma et principes d'adaptation à un autre client
+  decisions/          Fiches de décision (le "pourquoi" de chaque choix)
+  guides/             Mise en place et guide de chaque brique
+.github/workflows/    CI (tests) et workflows IA
+```
+
+## 🚀 Démarrage rapide
+
+1. Suivre le [guide de mise en place](docs/guides/mise-en-place.md) (secrets GitHub, environ 20 minutes)
+2. Lancer **Actions > Smoke test IA > Run workflow** pour vérifier la chaîne complète
+3. Lire l'[architecture](docs/architecture.md) et les [décisions](docs/decisions/README.md)
+
+---
+
 ## 📍 Avancement
 
-*Mis à jour le 27/10/2026*
+*Mis à jour le 12/11/2026*
 
 - [x] Projet Jira de test créé (clé `PI`)
 - [x] ScriptRunner accessible, premier script validé dans la Script Console
-- [ ] Compte et clé API Anthropic, avec limite de dépense mensuelle
-- [ ] Premier appel à Claude depuis ScriptRunner
-- [ ] Brique 1 : triage IA
-- [ ] Espace Confluence de test et dépôt GitHub
+- [x] Compte et clé API Anthropic, avec limite de dépense mensuelle
+- [x] Socle : module IA commun (masquage, audit, prompts versionnés), CI, smoke test
+- [x] Jeu de tickets de démo fictifs (PI-1 à PI-8) et script de remise à zéro
+- [x] Premier appel à Claude validé en CI (smoke test)
+- [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
+- [ ] Brique 1 : règle Jira Automation branchée et démo validée
+- [ ] Espace Confluence de test
 - [ ] Brique 2 : Jira + CI/CD
 - [ ] Brique 4 : incident vers post-mortem
 - [ ] Brique 3 : revue IA des PR *(bonus)*
