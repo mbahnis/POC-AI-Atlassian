@@ -161,7 +161,6 @@ flowchart LR
 ## 📂 Structure du dépôt
 
 ```
-config/               Référentiel propre au client (composants, labels)
 ai_core/              Module IA commun : prompts, masquage, fournisseurs, audit
   prompts/            Prompts versionnés (un fichier par usage)
   providers/          Fournisseurs IA interchangeables (Anthropic, faux fournisseur de test)
@@ -171,7 +170,7 @@ demo/                 Données de démo fictives
 docs/
   architecture.md     Schéma et principes d'adaptation à un autre client
   decisions/          Fiches de décision (le "pourquoi" de chaque choix)
-  guides/             Mise en place et guide de chaque brique
+  guides/             Mise en place pas à pas
 .github/workflows/    CI (tests) et workflows IA
 ```
 
