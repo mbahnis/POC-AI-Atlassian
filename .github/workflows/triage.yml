@@ -1,0 +1,60 @@
+name: Brique 1 - Triage IA
+
+# Deux façons de déclencher :
+# - automatiquement : une règle Jira Automation appelle l'API GitHub (repository_dispatch) à la création d'un ticket
+# - manuellement : Actions > Brique 1 - Triage IA > Run workflow, en saisissant la clé du ticket
+on:
+  repository_dispatch:
+    types: [jira-issue-created]
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: "Clé du ticket Jira (ex. PI-2)"
+        required: true
+      force:
+        description: "Retrier même si le ticket a déjà été trié"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Un seul triage à la fois par ticket
+concurrency:
+  group: triage-${{ github.event.client_payload.issue_key || inputs.issue_key }}
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+      AI_MODEL_FAST: ${{ vars.AI_MODEL_FAST || 'claude-haiku-5-5' }}
+      # Passée par variable d'environnement (et non directement dans la commande) : évite toute injection de commande
+      ISSUE_KEY: ${{ github.event.client_payload.issue_key || inputs.issue_key }}
+      FORCE: ${{ inputs.force && '--force' || '' }}
+    steps:
+      - name: Valider la clé du ticket
+        run: |
+          if ! [[ "$ISSUE_KEY" =~ ^[A-Z][A-Z0-9]+-[0-9]+$ ]]; then
+            echo "::error::Clé de ticket invalide : '$ISSUE_KEY'"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Triage IA de ${{ env.ISSUE_KEY }}
+        run: python -m scripts.triage_ticket "$ISSUE_KEY" $FORCE
+      - name: Publier le journal d'audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-audit-log
+          path: ai-audit.jsonl
+          if-no-files-found: ignore

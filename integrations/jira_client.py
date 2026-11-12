@@ -11,6 +11,22 @@ import os
 import requests
 
 
+def adf_to_text(node: dict | None) -> str:
+    """Extrait le texte brut d'une description Jira au format ADF."""
+    if not node:
+        return ""
+    if node.get("type") == "text":
+        return node.get("text", "")
+    if node.get("type") == "hardBreak":
+        return "\n"
+    parts = [adf_to_text(child) for child in node.get("content", [])]
+    sep = "\n" if node.get("type") in ("doc", "bulletList", "orderedList") else ""
+    text = sep.join(parts)
+    if node.get("type") == "listItem":
+        text = "- " + text
+    return text
+
+
 def adf_text(text: str) -> dict:
     """Convertit du texte simple au format ADF attendu par Jira Cloud (un paragraphe par ligne)."""
     paragraphs = []
@@ -64,8 +80,14 @@ class JiraClient:
         }
         return self._check(self.session.post(self._url("issue"), json=body)).json()["key"]
 
-    def add_comment(self, key: str, text: str) -> None:
-        self._check(self.session.post(self._url(f"issue/{key}/comment"), json={"body": adf_text(text)}))
+    def add_comment(self, key: str, body: str | dict) -> None:
+        """Ajoute un commentaire : texte simple, ou document ADF déjà construit (mise en forme riche)."""
+        adf = body if isinstance(body, dict) else adf_text(body)
+        self._check(self.session.post(self._url(f"issue/{key}/comment"), json={"body": adf}))
+
+    def add_labels(self, key: str, labels: list[str]) -> None:
+        body = {"update": {"labels": [{"add": label} for label in labels]}}
+        self._check(self.session.put(self._url(f"issue/{key}"), json=body))
 
     def delete_issue(self, key: str) -> None:
         self._check(self.session.delete(self._url(f"issue/{key}"), params={"deleteSubtasks": "true"}))

@@ -55,13 +55,13 @@ flowchart LR
 
 | | |
 |---|---|
-| **Ce qu'on fait** | A la création d'un ticket, ScriptRunner envoie le contenu à Claude. L'IA propose une priorité, des labels, un composant, détecte les doublons probables et reformule en critères d'acceptation. Le résultat revient en commentaire dans le ticket. |
+| **Ce qu'on fait** | A la création d'un ticket, une règle Jira Automation (ou ScriptRunner) envoie le contenu à Claude. L'IA propose une priorité, des labels, un composant, détecte les doublons probables et reformule en critères d'acceptation. Le résultat revient en commentaire dans le ticket. |
 | **Pourquoi c'est bien** | Effet visible en quelques secondes : un ticket flou devient exploitable. |
 | **Ce que ça résout** | Tickets incomplets, qualité hétérogène, temps perdu en allers-retours et en tri manuel. |
 
 **Exemple**
 - ❌ **Avant** : ticket "ça marche pas le paiement", le chef de projet doit rappeler l'auteur pour comprendre.
-- ✅ **Après** : l'IA reformule ("Echec du paiement par carte à la validation du panier"), propose la priorité Haute, repère un doublon (PI-12) et liste les questions à poser. Validation humaine en 30 secondes.
+- ✅ **Après** : l'IA reformule ("Echec du paiement par carte à la validation du panier"), propose la priorité Haute, repère un doublon (PI-1) et liste les questions à poser. Validation humaine en 30 secondes.
 
 ### 2️⃣ Jira + CI/CD : livraison tracée de bout en bout
 
@@ -191,8 +191,9 @@ docs/
 - [x] Compte et clé API Anthropic, avec limite de dépense mensuelle
 - [x] Socle : module IA commun (masquage, audit, prompts versionnés), CI, smoke test
 - [x] Jeu de tickets de démo fictifs (PI-1 à PI-8) et script de remise à zéro
-- [ ] Premier appel à Claude validé en CI
-- [ ] Brique 1 : triage IA
+- [x] Premier appel à Claude validé en CI (smoke test)
+- [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
+- [ ] Brique 1 : règle Jira Automation branchée et démo validée
 - [ ] Espace Confluence de test
 - [ ] Brique 2 : Jira + CI/CD
 - [ ] Brique 4 : incident vers post-mortem
