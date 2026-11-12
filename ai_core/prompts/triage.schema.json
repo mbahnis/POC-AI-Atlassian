@@ -17,19 +17,29 @@
     },
     "priorite": {
       "type": "string",
-      "enum": ["Critique", "Haute", "Moyenne", "Basse"]
+      "enum": [
+        "Critique",
+        "Haute",
+        "Moyenne",
+        "Basse"
+      ]
     },
     "justification_priorite": {
       "type": "string",
       "description": "Une phrase"
     },
     "composant": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Un des composants possibles, ou null si impossible à déterminer"
     },
     "labels": {
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "maxItems": 3,
       "description": "0 à 3 labels parmi les labels possibles"
     },
@@ -38,24 +48,53 @@
       "items": {
         "type": "object",
         "properties": {
-          "cle": {"type": "string"},
-          "confiance": {"type": "string", "enum": ["forte", "moyenne", "faible"]},
-          "raison": {"type": "string"}
+          "cle": {
+            "type": "string"
+          },
+          "confiance": {
+            "type": "string",
+            "enum": [
+              "forte",
+              "moyenne",
+              "faible"
+            ]
+          },
+          "raison": {
+            "type": "string"
+          }
         },
-        "required": ["cle", "confiance", "raison"]
+        "required": [
+          "cle",
+          "confiance",
+          "raison"
+        ]
       }
     },
     "criteres_acceptation": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      }
     },
     "questions_a_poser": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5,
+      "description": "3 à 5 questions, les plus utiles en premier"
     }
   },
   "required": [
-    "qualite_ticket", "titre_reformule", "resume", "priorite", "justification_priorite",
-    "composant", "labels", "doublons", "criteres_acceptation", "questions_a_poser"
+    "qualite_ticket",
+    "titre_reformule",
+    "resume",
+    "priorite",
+    "justification_priorite",
+    "composant",
+    "labels",
+    "doublons",
+    "criteres_acceptation",
+    "questions_a_poser"
   ]
 }

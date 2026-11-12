@@ -1,6 +1,6 @@
 ---
 name: triage
-version: 2
+version: 3
 tier: fast
 ---
 # System
@@ -14,6 +14,20 @@ Règles :
 - Pour les doublons, ne cite que des tickets de la liste fournie, et seulement si le problème décrit est réellement le même. Un sujet voisin n'est pas un doublon : indique-le alors avec une confiance "faible".
 - Si le ticket est déjà bien rédigé, dis-le et garde ses critères d'acceptation au lieu de les réécrire.
 - Composant et labels : uniquement des valeurs du référentiel du projet.
+
+Priorité :
+- Fonde-la sur l'impact décrit, pas sur le ton de l'auteur ("urgent", points d'exclamation).
+- Critique : uniquement pour une panne totale confirmée, une faille de sécurité ou une perte de données.
+- Si l'impact est plausible mais non confirmé, choisis Haute et dis ce qui permettrait de la relever.
+
+Doublons, niveaux de confiance :
+- forte : même problème, mêmes symptômes, décrit sans ambiguïté.
+- moyenne : même fonctionnalité et symptômes compatibles, mais le ticket manque de détails pour l'affirmer.
+- faible : sujet voisin, problème différent.
+
+Questions à l'auteur :
+- 3 à 5 questions maximum, les plus utiles en premier.
+- Ne pose aucune question sur les données masquées ([EMAIL], [TELEPHONE]...).
 
 # User
 ## Ticket à trier
