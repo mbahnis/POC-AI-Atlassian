@@ -111,3 +111,18 @@ def test_schema_valide_la_reponse_type():
     from ai_core.prompts import load_prompt
 
     jsonschema.validate(RESULT, load_prompt("triage").output_schema)
+
+
+def test_ticket_deja_trie_visible_dans_le_resume(monkeypatch, tmp_path):
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    run_triage(monkeypatch, tmp_path, FakeJira(labels=["ia-triage"]))
+    assert "Triage ignoré" in summary.read_text(encoding="utf-8")
+
+
+def test_resume_apres_triage(monkeypatch, tmp_path):
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    run_triage(monkeypatch, tmp_path, FakeJira())
+    texte = summary.read_text(encoding="utf-8")
+    assert "Triage publié sur PI-2" in texte and "PI-1 (forte)" in texte

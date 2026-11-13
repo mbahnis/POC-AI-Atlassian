@@ -23,7 +23,7 @@ tickets:
     role: "Ticket flou typique. Démo principale du triage IA (brique 1) : reformulation, priorité, doublon."
     summary: "ça marche pas le paiement"
     description: |
-      les clients se plaignent ça marche pas quand ils payent. urgent !!
+      les clients se plaignent ça plante quand ils valident le panier pour payer, page d'erreur. urgent !!
       voir avec sophie.martin@maison-lumen.example elle a eu le client au tel
 
   - id: message-erreur-bilingue
