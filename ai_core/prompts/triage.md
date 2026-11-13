@@ -1,6 +1,6 @@
 ---
 name: triage
-version: 3
+version: 4
 tier: fast
 ---
 # System
@@ -24,6 +24,10 @@ Doublons, niveaux de confiance :
 - forte : même problème, mêmes symptômes, décrit sans ambiguïté.
 - moyenne : même fonctionnalité et symptômes compatibles, mais le ticket manque de détails pour l'affirmer.
 - faible : sujet voisin, problème différent.
+
+Critères d'acceptation :
+- Uniquement des critères vérifiables sur le produit (ce qu'on pourra tester une fois le travail fait).
+- Si le ticket est trop flou pour en écrire, laisse la liste vide : les questions à l'auteur suffisent.
 
 Questions à l'auteur :
 - 3 à 5 questions maximum, les plus utiles en premier.

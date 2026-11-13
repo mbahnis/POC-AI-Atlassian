@@ -14,6 +14,7 @@ Variables : ANTHROPIC_API_KEY, JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -27,6 +28,14 @@ CONFIG_FILE = Path(__file__).resolve().parent.parent / "config" / "triage.yaml"
 
 PRIORITY_ICONS = {"Critique": "🔴", "Haute": "🟠", "Moyenne": "🟡", "Basse": "🟢"}
 CONFIDENCE_ORDER = {"forte": 0, "moyenne": 1, "faible": 2}
+
+
+def write_summary(markdown: str) -> None:
+    """Écrit dans le résumé de l'exécution GitHub Actions (visible sur la page du run). Sans effet en local."""
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if path:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(markdown)
 
 
 def load_config() -> dict:
@@ -97,7 +106,12 @@ def triage(key: str, dry_run: bool = False, force: bool = False, jira: JiraClien
     fields = issue["fields"]
 
     if config["triaged_label"] in fields.get("labels", []) and not force:
-        print(f"{key} déjà trié (label {config['triaged_label']}), rien à faire. Utiliser --force pour relancer.")
+        message = (
+            f"{key} a déjà été trié (label {config['triaged_label']}) : aucun appel à l'IA, aucun commentaire. "
+            "Relancer avec l'option 'Retrier' cochée pour forcer."
+        )
+        print(f"::warning title=Ticket déjà trié::{message}")
+        write_summary(f"## ⏭️ Triage ignoré\n\n{message}\n")
         return None
 
     project = fields["project"]["key"]
@@ -130,6 +144,12 @@ def triage(key: str, dry_run: bool = False, force: bool = False, jira: JiraClien
     jira.add_comment(key, build_comment(result, response.model))
     jira.add_labels(key, [config["triaged_label"]])
     print(f"Commentaire de triage publié sur {key}.")
+    doublons = ", ".join(f"{d['cle']} ({d['confiance']})" for d in result.get("doublons") or []) or "aucun"
+    write_summary(
+        f"## ✅ Triage publié sur {key}\n\n"
+        f"| Qualité | Priorité | Composant | Doublons |\n|---|---|---|---|\n"
+        f"| {result.get('qualite_ticket')}/5 | {result.get('priorite')} | {result.get('composant') or '-'} | {doublons} |\n"
+    )
     return result
 
 
