@@ -61,6 +61,8 @@ jobs:
       JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY || 'PI' }}
       # Sans cette variable, les notes sont publiées dans la GitHub Release au lieu de Confluence
       CONFLUENCE_SPACE_KEY: ${{ vars.CONFLUENCE_SPACE_KEY }}
+      # Site Confluence s'il diffère du site Jira (sinon laisser vide)
+      CONFLUENCE_BASE_URL: ${{ vars.CONFLUENCE_BASE_URL }}
       CONFLUENCE_PARENT_TITLE: ${{ vars.CONFLUENCE_PARENT_TITLE }}
       AI_MODEL_SMART: ${{ vars.AI_MODEL_SMART || 'claude-sonnet-5-5' }}
       DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}

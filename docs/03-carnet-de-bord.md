@@ -206,7 +206,10 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 - **Premier tag = référence** : `v1.0.0` ne produit pas de notes, sinon l'IA résumerait tout l'historique du POC.
 - **Appli fictive** `app/paiement.py` : elle ne sert qu'à avoir du vrai code à modifier dans les PR de démo. Volontairement, ses messages d'erreur sont **uniquement en français** : c'est l'oubli que la brique 3 détectera face au ticket PI-3.
 
-**Blocage rencontré :** Confluence répond en **404** sur la sandbox (via le connecteur), comme s'il n'était pas activé. D'où la publication alternative, qui permet d'avancer.
+**Blocages rencontrés :**
+- Confluence répondait en **404** : il n'existe pas sur le site sandbox de Jira (`one-atlas-bfqf-sandbox`), mais sur le **site principal partagé** `one-atlas-bfqf` (où mes collègues ont leurs espaces). Décision prise avec moi : créer un **espace dédié `POCIA`** sur ce site et n'écrire que dedans. Le code accepte un site Confluence différent du site Jira (`CONFLUENCE_BASE_URL`), ce qui arrivera aussi chez des clients.
+- "GitHub for Jira" s'appelle désormais **GitHub for Atlassian**. Le Marketplace contient plusieurs applications tierces aux noms proches : prendre celle éditée par Atlassian.
+- L'administration Jira signale que **ScriptRunner** tourne sur une plateforme **non prise en charge après janvier 2027**. Argument de plus pour ne pas en dépendre.
 
 **État :** code et tests prêts (42 tests). Reste à faire de mon côté : installer GitHub for Jira, créer les 2 flux de statut, vérifier Confluence, puis répéter le scénario complet.
 
@@ -304,7 +307,8 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | Clé API Anthropic | Secret GitHub `ANTHROPIC_API_KEY` | Moi, sur console.anthropic.com (limite 5 $) | Appeler Claude | Révoquer |
 | Token API Atlassian | Secret GitHub `JIRA_API_TOKEN` (+ `JIRA_EMAIL`) | Moi, sur id.atlassian.com | Lire et écrire dans Jira avec mes droits | Révoquer |
 | URL Jira | Variable GitHub `JIRA_BASE_URL` | | `https://one-atlas-bfqf-sandbox.atlassian.net` | |
-| Espace Confluence | Variables GitHub `CONFLUENCE_SPACE_KEY`, `CONFLUENCE_PARENT_TITLE` | | Où publier les notes (sinon GitHub Release) | |
+| Espace Confluence | Variables GitHub `CONFLUENCE_SPACE_KEY` (`POCIA`), `CONFLUENCE_PARENT_TITLE`, `CONFLUENCE_BASE_URL` (`https://one-atlas-bfqf.atlassian.net`) | | Où publier les notes (sinon GitHub Release) | Supprimer l'espace POCIA si besoin |
+| GitHub for Atlassian | App installée sur le site sandbox, reliée au dépôt | Moi | Branches, PR, déploiements visibles dans Jira | Désinstaller si besoin |
 | `GITHUB_TOKEN` | Fourni automatiquement par GitHub Actions | GitHub | Lire les PR, créer la Release (droit `contents: write` dans le workflow) | Rien à faire |
 | Token GitHub fine-grained | En-tête du flux Jira Automation | Moi, sur GitHub | Déclencher un workflow sur ce dépôt uniquement | Révoquer |
 | App GitHub "Claude" | Installée sur le dépôt | Moi | Claude pousse des branches et ouvre des PR | Désinstaller si besoin |

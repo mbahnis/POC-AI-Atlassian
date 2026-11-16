@@ -1,7 +1,9 @@
 """Client Confluence Cloud minimal (API REST v2).
 
-Mêmes identifiants que Jira (même site Atlassian) :
-  JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN
+Identifiants : ceux de Jira (JIRA_EMAIL, JIRA_API_TOKEN). Le token API Atlassian est lié au compte,
+il fonctionne sur tous les sites de l'organisation auxquels ce compte a accès.
+Site Confluence : CONFLUENCE_BASE_URL (ex. https://mon-org.atlassian.net), à défaut JIRA_BASE_URL
+(Confluence et Jira ne sont pas forcément sur le même site, c'est le cas sur la sandbox du POC)
 Espace cible : CONFLUENCE_SPACE_KEY (ex. POCIA), page parente optionnelle : CONFLUENCE_PARENT_TITLE
 """
 
@@ -12,7 +14,8 @@ import requests
 
 class ConfluenceClient:
     def __init__(self, base_url: str | None = None, email: str | None = None, token: str | None = None):
-        self.base_url = (base_url or os.environ["JIRA_BASE_URL"]).rstrip("/") + "/wiki"
+        site = base_url or os.environ.get("CONFLUENCE_BASE_URL") or os.environ["JIRA_BASE_URL"]
+        self.base_url = site.rstrip("/") + "/wiki"
         self.session = requests.Session()
         self.session.auth = (email or os.environ["JIRA_EMAIL"], token or os.environ["JIRA_API_TOKEN"])
         self.session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})

@@ -38,9 +38,11 @@ sequenceDiagram
 
 ## Mise en place
 
-### 1. GitHub for Jira (natif, 5 min, administrateur Jira)
+### 1. GitHub for Atlassian (natif, 5 min, administrateur du site)
 
-1. Jira > ⚙️ > **Applications** > **Trouver de nouvelles applications** > chercher **"GitHub for Jira"** (éditeur : Atlassian) > **Obtenir l'application**.
+L'application s'appelait "GitHub for Jira" ; elle se nomme désormais **GitHub for Atlassian**.
+
+1. **Administration** (admin.atlassian.com) > site > **Apps connectées** > **Parcourir les apps** > chercher **"GitHub for Atlassian"** (éditeur : **Atlassian**, pas les applications tierces au nom proche) > **Obtenir l'application**.
 2. Ouvrir l'application > **Connecter une organisation GitHub** > choisir le compte `mbahnis` > donner accès au dépôt `POC-AI-Atlassian`.
 3. Vérifier : dans un ticket, le panneau **Développement** apparaît.
 
@@ -64,8 +66,12 @@ Ces déclencheurs n'apparaissent qu'une fois GitHub for Jira connecté. Le ticke
 |---|---|
 | `CONFLUENCE_SPACE_KEY` | `POCIA` |
 | `CONFLUENCE_PARENT_TITLE` | `Release notes` |
+| `CONFLUENCE_BASE_URL` | Seulement si Confluence n'est pas sur le même site que Jira. Sur notre sandbox : `https://one-atlas-bfqf.atlassian.net` |
 
-Sans `CONFLUENCE_SPACE_KEY`, les notes sont publiées dans la **GitHub Release** du tag. Le token Jira existant sert aussi pour Confluence (même site Atlassian).
+Sans `CONFLUENCE_SPACE_KEY`, les notes sont publiées dans la **GitHub Release** du tag. Le token Jira existant sert aussi pour Confluence : un token API Atlassian est lié au compte, pas au site.
+
+> [!NOTE]
+> Sur notre environnement, Jira est sur `one-atlas-bfqf-sandbox` et Confluence sur `one-atlas-bfqf` (site partagé). Le POC n'écrit que dans son propre espace `POCIA`.
 
 ### 4. Environnement GitHub `production`
 
