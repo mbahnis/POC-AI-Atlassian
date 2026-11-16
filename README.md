@@ -175,6 +175,14 @@ docs/
 .github/workflows/    CI (tests) et workflows IA
 ```
 
+## 📚 Documentation
+
+| Document | Pour qui | Contenu |
+|---|---|---|
+| 💡 [Comprendre le POC](docs/01-comprendre-le-poc.md) | L'équipe | Ce que ça fait, comment, pourquoi, questions fréquentes |
+| 🎬 [Guide de démo](docs/02-guide-de-demo.md) | Le présentateur | Quoi montrer, quoi dire, et les réponses aux questions du client |
+| 📓 [Carnet de bord](docs/03-carnet-de-bord.md) | Le porteur du POC | Tout l'historique, les décisions, les bugs et les leçons |
+
 ## 🚀 Démarrage rapide
 
 1. Suivre le [guide de mise en place](docs/guides/mise-en-place.md) (secrets GitHub, environ 20 minutes)

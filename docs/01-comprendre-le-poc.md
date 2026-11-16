@@ -1,0 +1,154 @@
+# 💡 Comprendre le POC en 5 minutes
+
+> [!NOTE]
+> **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
+> **Mis à jour le** 16/11/2026, après la brique 1 (triage IA).
+
+---
+
+## 1. En une phrase
+
+Le POC montre comment **l'IA peut s'intégrer entre Jira, Confluence et les outils DevOps** d'un client pour supprimer les tâches répétitives (trier les tickets, écrire les release notes, rédiger les post-mortems), **sans jamais décider à la place de l'équipe**.
+
+## 2. Le problème qu'on résout
+
+Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
+
+| Irritant | Conséquence | Brique qui y répond |
+|---|---|---|
+| Tickets flous, incomplets, en doublon | Allers-retours, tri manuel, bugs traités deux fois | 🧠 **1. Triage IA** ✅ |
+| Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 2. Jira + CI/CD (à venir) |
+| Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 2. Jira + CI/CD (à venir) |
+| Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 3. Revue IA des PR (à venir) |
+| Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 4. Incident vers post-mortem (à venir) |
+
+## 3. Ce qui fonctionne aujourd'hui
+
+### 🧠 Brique 1 : le triage IA des tickets
+
+**Ce que voit l'utilisateur :** il crée un ticket dans Jira, même mal rédigé. Environ **30 secondes** plus tard, un commentaire apparaît dans le ticket :
+
+```
+🤖 Proposition de triage IA, à valider par l'équipe.   Qualité estimée : 2/5
+
+Reformulation   Erreur à la validation du panier pour le paiement
+Priorité        🟠 Haute (et ce qui permettrait de la passer en Critique)
+Composant       Paiement
+Doublons        PI-2 (confiance forte) : même signalement
+                PI-1 (confiance moyenne) : même étape, symptôme compatible
+Questions       5 questions précises à poser à l'auteur
+```
+
+**Ce que ça change :** un ticket inexploitable devient exploitable en 30 secondes. Le chef de projet valide au lieu de rédiger.
+
+> [!IMPORTANT]
+> L'IA **ne modifie aucun champ** du ticket. Elle propose dans un commentaire, l'équipe décide. Seul un label technique `ia-triage` est ajouté pour ne pas trier deux fois.
+
+## 4. Comment ça marche
+
+```mermaid
+flowchart LR
+    A[👤 Ticket créé<br/>dans Jira] --> B[⚡ Flux<br/>Jira Automation]
+    B -->|appel API| C[⚙️ GitHub Actions]
+    C --> D[🛡️ Masquage<br/>données perso]
+    D --> E[🤖 Claude]
+    E --> F[✅ Contrôle<br/>de la réponse]
+    F --> G[💬 Commentaire<br/>dans Jira]
+    F -.-> H[📒 Journal<br/>d'audit]
+```
+
+1. **Jira Automation** (natif, inclus dans toutes les licences Jira Cloud) détecte la création du ticket et prévient GitHub.
+2. **GitHub Actions** lance un script Python qui lit le ticket et les tickets ouverts, avec un extrait de leur description (pour repérer les doublons).
+3. Les **données personnelles sont masquées** (e-mails, téléphones, IP, IBAN, clés d'API) avant tout envoi.
+4. **Claude** analyse et répond dans un format imposé.
+5. La réponse est **contrôlée** : format, valeurs autorisées, absence d'anomalie. Si elle est mauvaise, on relance une fois ; sinon on n'écrit rien.
+6. Le commentaire est publié. Chaque appel est tracé dans un **journal d'audit**.
+
+## 5. Les trois principes à retenir
+
+| Principe | Concrètement |
+|---|---|
+| 🧑‍⚖️ **L'IA propose, l'humain décide** | Commentaires et suggestions, jamais de modification silencieuse des champs |
+| 🛡️ **Sécurité et traçabilité dès le départ** | Masquage avant envoi, journal d'audit sans contenu sensible, secrets hors du code |
+| 🔌 **Indépendance vis-à-vis des outils** | L'IA est isolée dans un module : changer de fournisseur d'IA, de CI ou de cloud ne remet pas en cause le reste |
+
+## 6. Les questions qu'on me pose
+
+<details>
+<summary><b>Pourquoi ne pas utiliser Rovo, l'IA d'Atlassian ?</b></summary>
+
+Rovo couvre très bien les usages standard. Le POC le complète quand le client a besoin de :
+- **choisir son modèle et son hébergement** (Anthropic, AWS Bedrock, Google Vertex, Azure) ;
+- **versionner et relire ses règles** (prompts dans Git, modifiés par PR) ;
+- **relier Jira à sa chaîne CI/CD** et à sa supervision (briques 2 à 4) ;
+- **un journal d'audit détaillé** par appel.
+
+À noter : utiliser un agent Rovo nécessite qu'un administrateur de l'organisation l'active. Le modèle de triage Rovo proposé par Atlassian se limite par défaut à suggérer des améliorations de la description.
+</details>
+
+<details>
+<summary><b>Quelles données partent vers l'IA ?</b></summary>
+
+Le titre et la description du ticket, plus la liste des titres des tickets ouverts. **Avant l'envoi**, les e-mails, téléphones, adresses IP, IBAN, numéros de carte et clés d'API sont remplacés par des balises (`[EMAIL]`, `[IP]`...). Limite connue : les noms de personnes ne sont pas masqués (il faudrait un outil spécialisé, prévu dans l'architecture).
+</details>
+
+<details>
+<summary><b>Et si l'IA se trompe ?</b></summary>
+
+Trois garde-fous :
+1. Elle ne fait que **proposer** : rien n'est appliqué sans validation.
+2. Sa réponse est **contrôlée par le code** : un composant ou un label qui n'existe pas dans le référentiel du projet est retiré.
+3. Une réponse mal formée est **relancée une fois**, puis abandonnée : mieux vaut pas de commentaire qu'un commentaire faux.
+</details>
+
+<details>
+<summary><b>Combien ça coûte ?</b></summary>
+
+Quelques fractions de centime par ticket avec le modèle utilisé (Claude Haiku, le plus économique). Pour le POC, 5 $ de crédit suffisent largement. Les tokens consommés sont tracés à chaque appel dans le journal d'audit, ce qui permet de suivre le coût réel.
+</details>
+
+<details>
+<summary><b>Le client est sous GitLab / Azure DevOps / Jenkins, ça marche ?</b></summary>
+
+Oui. Le code Python ne dépend pas de GitHub ; seul le fichier qui déclenche le traitement change. Le détail est dans [l'architecture](architecture.md#adapter-le-poc-à-un-autre-client).
+</details>
+
+<details>
+<summary><b>Pourquoi 30 secondes et pas instantané ?</b></summary>
+
+GitHub Actions démarre une machine à chaque exécution (environ 20 secondes). C'est gratuit et parfait pour une démo. En production, le même code tourne dans une fonction serverless (AWS Lambda, Azure Functions...) et répond en quelques secondes.
+</details>
+
+<details>
+<summary><b>Pourquoi les commentaires sont-ils signés "Mehdi BAHNIS" ?</b></summary>
+
+Le POC utilise mon compte Atlassian. Chez un client, on crée un compte de service nommé (par exemple "Assistant IA").
+</details>
+
+<details>
+<summary><b>Combien de temps pour l'installer chez un client ?</b></summary>
+
+Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter le référentiel de composants et labels, brancher le flux), puis quelques jours d'observation pour ajuster le prompt à leurs tickets.
+</details>
+
+## 7. Comment on l'a construit
+
+| Étape | Ce qu'on a fait | Pourquoi |
+|---|---|---|
+| **0. Socle** | Module IA commun, masquage, journal d'audit, tests automatiques, tickets de démo fictifs | Poser la sécurité et la qualité une fois pour toutes, avant les fonctionnalités |
+| **1. Triage** | Prompt de triage, script, workflow GitHub, commentaire mis en forme | La brique la plus visible et la plus simple à démontrer |
+| **1 bis. Fiabilisation** | Format de réponse imposé par l'API, contrôle et relance, règles métier dans le code | Les premiers essais réels ont révélé des réponses mal formées |
+| **1 ter. Automatisation** | Flux Jira Automation qui déclenche le triage à la création | Zéro action manuelle : c'est ce qui fait l'effet en démo |
+| **1 quater. Doublons** | Les tickets candidats sont envoyés avec un extrait de leur description | L'IA ne voyait que les titres et ne pouvait pas confirmer un doublon évident |
+
+Chaque choix important est expliqué dans une [fiche de décision](decisions/README.md).
+
+## 8. Où trouver quoi
+
+| Je veux... | Aller voir |
+|---|---|
+| Préparer et faire la démo | [Guide de démo](02-guide-de-demo.md) |
+| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md) puis [brique 1](guides/brique-1-triage.md) |
+| Comprendre l'architecture et l'adapter à un client | [Architecture](architecture.md) |
+| Savoir pourquoi un choix a été fait | [Décisions](decisions/README.md) |
+| Modifier le comportement du triage | `ai_core/prompts/triage.md` et `config/triage.yaml` |
