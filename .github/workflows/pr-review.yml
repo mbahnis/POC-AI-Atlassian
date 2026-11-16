@@ -1,0 +1,57 @@
+name: Brique 3 - Revue IA de la PR
+
+# À chaque ouverture ou mise à jour d'une PR : le code fait-il ce que demande le ticket Jira ?
+# Le résultat est un commentaire (mis à jour à chaque push) : il ne bloque pas la fusion.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  pull-requests: write   # commenter la PR
+
+# Un nouveau push annule la revue en cours de la version précédente
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Pas de revue sur les brouillons, ni quand seul le texte d'une PR change sans toucher au titre
+    if: >-
+      github.event.pull_request.draft == false &&
+      (github.event.action != 'edited' || github.event.changes.title != null)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+      AI_MODEL_SMART: ${{ vars.AI_MODEL_SMART || 'claude-sonnet-5-5' }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}   # on exécute le code de main, pas celui de la PR
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Revue IA contre le ticket
+        run: |
+          # La toute première PR (celle qui ajoute la brique 3) n'a pas encore le script sur main
+          if [ ! -f scripts/review_pr.py ]; then
+            echo "::notice::Revue IA pas encore disponible sur main : elle s'appliquera aux PR suivantes."
+            exit 0
+          fi
+          python -m scripts.review_pr --pr "$PR_NUMBER"
+      - name: Publier le journal d'audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-audit-pr-${{ github.event.pull_request.number }}
+          path: ai-audit.jsonl
+          if-no-files-found: ignore
