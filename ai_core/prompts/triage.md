@@ -1,6 +1,6 @@
 ---
 name: triage
-version: 6
+version: 7
 tier: fast
 max_tokens: 4000
 ---
@@ -23,7 +23,7 @@ Priorité :
 - Si l'impact est plausible mais non confirmé, choisis Haute et dis ce qui permettrait de la relever.
 
 Doublons, niveaux de confiance :
-- forte : même problème, mêmes symptômes, décrit sans ambiguïté.
+- forte : même problème et mêmes symptômes (titres et extraits concordants), y compris quand les deux tickets sont aussi peu détaillés l'un que l'autre.
 - moyenne : même fonctionnalité et symptômes compatibles, mais le ticket manque de détails pour l'affirmer.
 - faible : sujet voisin, problème différent.
 
