@@ -14,6 +14,7 @@ Chaque choix structurant du POC est consigné dans une fiche courte : le context
 | [0008](0008-sorties-structurees.md) | Sorties structurées garanties par l'API | Acceptée |
 | [0009](0009-release-notes-publication-interchangeable.md) | Brique 2 : statuts en natif, notes de version IA, publication interchangeable | Acceptée |
 | [0010](0010-revue-pr-contre-ticket.md) | Brique 3 : revue IA de PR limitée à "le code fait-il ce que demande le ticket ?" | Acceptée |
+| [0011](0011-incident-postmortem.md) | Brique 4 : alerte vers incident, post-mortem IA en brouillon "blameless" | Acceptée |
 
 ## Modèle de fiche
 

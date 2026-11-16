@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
-> **Mis à jour le** 16/11/2026 : briques 1 (triage IA), 2 (livraison tracée) et 3 (revue de PR) validées en conditions réelles.
+> **Mis à jour le** 16/11/2026 : briques 1 (triage IA), 2 (livraison tracée) et 3 (revue de PR) validées en conditions réelles ; brique 4 (post-mortem) construite, en cours de validation.
 
 ---
 
@@ -20,7 +20,7 @@ Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
 | Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** ✅ |
 | Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** ✅ |
 | Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 **3. Revue IA des PR** ✅ |
-| Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 4. Incident vers post-mortem (à venir) |
+| Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 **4. Incident vers post-mortem** 🔄 |
 
 ## 3. Ce qui fonctionne aujourd'hui
 
@@ -70,6 +70,17 @@ Questions       5 questions précises à poser à l'auteur
 
 > [!NOTE]
 > La revue IA ne juge ni le style ni l'architecture et **ne bloque pas** la fusion : elle complète la revue humaine sur la seule question "le code fait-il ce que demande le ticket ?".
+
+### 📚 Brique 4 : de l'alerte au post-mortem (en cours de validation)
+
+**Ce que voit l'astreinte :** une alerte de supervision crée un incident dans Jira, avec le service touché, la gravité, la procédure et le **dernier déploiement** (souvent la première piste). L'équipe commente ses actions dans l'incident.
+
+**Ce que voit l'équipe le lendemain :** dès que l'incident passe "Terminé", un **brouillon de post-mortem** apparaît dans Confluence : résumé, durée, chronologie, cause probable avec un niveau de confiance, actions correctives proposées et questions à trancher en revue.
+
+**Ce que ça change :** on passe d'une page blanche (ou d'un post-mortem jamais écrit) à 10 minutes de relecture.
+
+> [!NOTE]
+> Le post-mortem est **"blameless"** (aucune personne n'est mise en cause) et reste un **brouillon** : l'IA ne crée aucun ticket d'action, l'équipe décide. Sur notre sandbox, Jira Service Management n'est pas activé : les incidents vivent dans un projet Jira dédié (`PIOPS`), et basculer vers JSM ne demande que deux réglages.
 
 ## 4. Comment ça marche
 
@@ -171,6 +182,12 @@ Parce que d'autres outils le font déjà, et que c'est le rôle de la revue huma
 </details>
 
 <details>
+<summary><b>Le post-mortem ne risque-t-il pas de désigner un coupable ?</b></summary>
+
+Non, c'est une règle de conception : l'IA décrit des rôles ("l'astreinte", "l'équipe de développement"), jamais des personnes, et le code retire les noms des auteurs Jira s'il en reste. La cause est présentée comme une hypothèse avec un niveau de confiance, à confirmer en revue.
+</details>
+
+<details>
 <summary><b>Combien de temps pour l'installer chez un client ?</b></summary>
 
 Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter le référentiel de composants et labels, brancher le flux), puis quelques jours d'observation pour ajuster le prompt à leurs tickets.
@@ -186,6 +203,7 @@ Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter l
 | **1 ter. Automatisation** | Flux Jira Automation qui déclenche le triage à la création | Zéro action manuelle : c'est ce qui fait l'effet en démo |
 | **1 quater. Doublons** | Les tickets candidats sont envoyés avec un extrait de leur description | L'IA ne voyait que les titres et ne pouvait pas confirmer un doublon évident |
 | **2. Livraison** | Statuts en natif, workflow de release, notes de version IA, versions Jira | Montrer le lien entre le code, le déploiement et la documentation sans ressaisie |
+| **4. Post-mortem** | Alerte vers incident (avec dernier déploiement), brouillon de post-mortem IA dans Confluence à la clôture | Ne plus partir d'une page blanche après un incident |
 | **3. Revue de PR** | Évaluation de chaque critère d'acceptation face au diff, commentaire unique mis à jour, Jira informé si le verdict change | Repérer les oublis fonctionnels avant la recette |
 
 Chaque choix important est expliqué dans une [fiche de décision](decisions/README.md).
@@ -195,7 +213,7 @@ Chaque choix important est expliqué dans une [fiche de décision](decisions/REA
 | Je veux... | Aller voir |
 |---|---|
 | Préparer et faire la démo | [Guide de démo](02-guide-de-demo.md) |
-| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md), puis [brique 1](guides/brique-1-triage.md), [brique 2](guides/brique-2-release.md) et [brique 3](guides/brique-3-revue-pr.md) |
+| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md), puis [brique 1](guides/brique-1-triage.md), [brique 2](guides/brique-2-release.md) , [brique 3](guides/brique-3-revue-pr.md) et [brique 4](guides/brique-4-incident-postmortem.md) |
 | Comprendre l'architecture et l'adapter à un client | [Architecture](architecture.md) |
 | Savoir pourquoi un choix a été fait | [Décisions](decisions/README.md) |
 | Modifier le comportement du triage | `ai_core/prompts/triage.md` et `config/triage.yaml` |

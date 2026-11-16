@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
 > **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) validée le 16/11 (PR #15). Briques 3 et 4 à venir.
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) validée le 16/11 (PR #15). Brique 4 (post-mortem) scénarisée, **à répéter avant tout usage client**. Briques 3 et 4 à venir.
 
 ---
 
@@ -34,6 +34,7 @@
 | 2 bis | Revue de PR contre le ticket | 3 min | "L'oubli est repéré avant la recette, et l'IA ne ment pas" |
 | 2 ter | Livraison tracée | 4 min | "Le code, le ticket et la doc restent alignés" |
 | 2 | Les garde-fous | 2 min | "L'IA propose, votre équipe décide" |
+| 2 quater | De l'alerte au post-mortem | 4 min | "Plus jamais de page blanche après un incident" |
 | 3 | Conclusion | 1 min | "On commence par la brique qui vous fait gagner le plus" |
 
 ---
@@ -165,6 +166,37 @@
 
 ---
 
+## 2️⃣ quater. De l'alerte au post-mortem (4 min)
+
+> [!WARNING]
+> Séquence à jouer après une répétition (voir le [guide de la brique 4](guides/brique-4-incident-postmortem.md#rejouer-la-démo)). Pour gagner du temps, déclencher l'alerte **avant** le rendez-vous : l'incident et sa chronologie seront prêts.
+
+### Étape 4.1 : l'alerte devient un incident
+
+**À montrer :** l'incident dans le projet **POC IA - Exploitation** : "[Incident] Mémoire saturée sur api-commandes (98 %)".
+
+**À dire :**
+> "Cette nuit, la supervision a détecté une saturation mémoire. L'incident s'est créé tout seul, avec la gravité, le service touché, la procédure, et surtout le **dernier déploiement** : la version d'hier. C'est la première question que se pose l'astreinte. Ensuite, l'équipe a simplement commenté ce qu'elle faisait."
+
+### Étape 4.2 : l'incident est clos, le post-mortem s'écrit
+
+**À faire :** passer l'incident à **Terminé**, attendre 1 à 2 minutes, rafraîchir l'incident puis ouvrir le lien vers Confluence.
+
+**À dire pendant l'attente :**
+> "D'habitude, à ce moment-là, quelqu'un se promet d'écrire le post-mortem... et ne le fait jamais. Ici, l'IA relit l'incident, les commentaires et l'historique, et prépare le brouillon."
+
+**À pointer sur la page :**
+
+| Point | À dire |
+|---|---|
+| Le statut "BROUILLON À RELIRE" | "C'est un brouillon : l'équipe relit et corrige en 10 minutes au lieu de partir de zéro." |
+| La durée | "Calculée par le code à partir de Jira, pas estimée par l'IA." |
+| La cause probable et sa confiance | "Une hypothèse, avec les faits qui l'appuient. L'équipe confirme en revue." |
+| Aucun nom de personne | "Post-mortem sans recherche de coupable : des rôles, pas des personnes." |
+| Les actions proposées | "Proposées, pas créées : l'équipe choisit lesquelles devenir des tickets." |
+
+---
+
 ## 3️⃣ Conclusion (1 min)
 
 **À dire :**
@@ -278,6 +310,20 @@
 
 **À dire :**
 > "Seul le diff de la PR est envoyé, avec le masquage des données sensibles (e-mails, clés d'API...). Si c'est un point bloquant, le modèle peut être hébergé chez votre cloud provider (Bedrock, Vertex AI, Azure) : on change une variable, pas le code."
+</details>
+
+<details>
+<summary><b>"On utilise PagerDuty / Opsgenie / JSM pour l'astreinte"</b></summary>
+
+**À dire :**
+> "Gardez votre outil d'astreinte : il reste celui qui réveille les gens. On se branche sur l'alerte ou sur l'incident Jira, et ce qu'on apporte, c'est le post-mortem. Avec Jira Service Management, l'incident est natif, avec ses délais de résolution."
+</details>
+
+<details>
+<summary><b>"Et si l'IA se trompe de cause ?"</b></summary>
+
+**À dire :**
+> "C'est pour ça qu'elle parle d'hypothèse, avec un niveau de confiance et les faits qui l'appuient, et que la page est marquée brouillon. La revue du post-mortem reste un moment d'équipe : on lui fait juste gagner la partie la plus pénible, la mise en forme et la chronologie."
 </details>
 
 <details>
