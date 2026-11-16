@@ -5,6 +5,10 @@ name: Brique 3 - Revue IA de la PR
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, edited]
+    # Une PR qui ne modifie que de la documentation n'a pas de critères fonctionnels à vérifier
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 permissions:
   contents: read

@@ -3,7 +3,6 @@ name: pr_review
 version: 2
 tier: smart
 max_tokens: 4000
-temperature: 0
 ---
 # System
 Tu vérifies si le code d'une pull request fait ce que demande le ticket Jira associé.

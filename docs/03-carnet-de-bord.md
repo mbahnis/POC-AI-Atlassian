@@ -264,9 +264,9 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 **Problèmes et corrections :**
 - **Mon scénario était mal conçu** : PI-3 contient des critères d'interface alors que l'appli fictive n'a pas d'interface. Ils ne pouvaient jamais être "couverts", donc la démo ne pouvait pas passer au vert.
 - **Instabilité de l'IA** entre deux exécutions sur le même critère.
-- Corrections ([décision 0010, mise à jour](decisions/0010-revue-pr-contre-ticket.md)) : verdict **calculé par le code** à partir des statuts, **température 0**, règle explicite pour les critères d'interface. Le scénario est complété par un dernier commit qui expose les messages via une fonction d'API utilisant la langue du navigateur.
+- Corrections ([décision 0010, mise à jour](decisions/0010-revue-pr-contre-ticket.md)) : verdict **calculé par le code** à partir des statuts, règle explicite pour les critères d'interface. Le scénario est complété par un dernier commit qui expose les messages via une fonction d'API utilisant la langue du navigateur.
 
-**Troisième push, après la correction (prompt v2, température 0, verdict calculé) :** un commit ajoute `app/api.py`, une réponse d'API qui sert le message dans la langue du navigateur. Résultat : bilingue ✅ **couvert**, code bancaire ✅, les deux critères d'interface 🟠 partiels avec la justification "le front qui consomme ces champs n'est pas dans le diff". Verdict 🟠.
+**Troisième push, après la correction (prompt v2, verdict calculé) :** un commit ajoute `app/api.py`, une réponse d'API qui sert le message dans la langue du navigateur. Résultat : bilingue ✅ **couvert**, code bancaire ✅, les deux critères d'interface 🟠 partiels avec la justification "le front qui consomme ces champs n'est pas dans le diff". Verdict 🟠.
 
 **Décision : on s'arrête là et on ne force pas l'IA.** Elle a raison : la partie front du ticket n'est pas faite. La règle "interface = non vérifiable" que j'avais ajoutée était une façon de tordre le résultat pour la démo ; elle a privilégié l'exactitude. La démo raconte maintenant cette histoire réelle (oubli détecté, correction reconnue, reste à faire signalé). La PR #15 reste **ouverte** comme support de démo.
 
@@ -274,6 +274,8 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 - l'IA analyse, le code tranche (verdict calculé) ;
 - un scénario de démo doit pouvoir réussir honnêtement : PI-3 mélangeait back et front alors que l'appli de démo n'a pas de front ;
 - quand l'IA contredit le résultat qu'on espérait, vérifier d'abord si elle n'a pas raison.
+
+**Bug introduit puis corrigé :** j'avais ajouté un réglage "température 0" pour stabiliser les réponses. Le SDK Anthropic 2.8 n'accepte plus ce paramètre : toutes les revues de PR plantaient (repéré sur la PR #17). Les tests simulaient l'API et ne l'ont pas vu. Correctif : réglage retiré, et nouveau test qui compare les arguments envoyés à la signature réelle du SDK. **Leçon : un faux fournisseur teste notre logique, pas le contrat de l'API ; il faut au moins un test qui vérifie ce contrat.**
 
 ---
 
@@ -303,7 +305,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | **Environnement GitHub** | Un nom de cible de déploiement (`production`), sur lequel on peut mettre des règles (validation manuelle) | Job `deploy` de la brique 2 |
 | **GitHub for Jira** | Application officielle Atlassian qui affiche branches, PR et déploiements GitHub dans les tickets | Partie native de la brique 2 |
 | **Diff** | La liste des lignes ajoutées et supprimées par une PR | Ce que la brique 3 compare aux critères |
-| **Température** | Réglage du modèle : 0 donne des réponses plus stables et prévisibles, une valeur plus haute des réponses plus variées | 0 pour la revue de PR |
+| **Température** | Réglage du modèle qui rend les réponses plus ou moins variées ; plus accepté par le SDK actuel pour ces modèles | Essayé puis retiré (bug du 16/11) |
 | **Critères d'acceptation** | Les conditions vérifiables qui disent quand un ticket est terminé | Lus par la brique 3 dans la description du ticket |
 | **fixVersion** | Le champ Jira "Version corrigée" : dans quelle version un ticket a été livré | Rempli par la brique 2 |
 | **Format storage** | Le format XHTML des pages Confluence, avec des macros (`info`, `warning`...) | Page de notes de version |
@@ -324,12 +326,12 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `config.py` | Les réglages, lus dans les variables d'environnement | `AI_PROVIDER`, `AI_MODEL_FAST`, `AI_MASKING`... |
 | `masking.py` | Les règles de masquage (expressions régulières) | Ne masque pas les noms de personnes (limite connue) |
 | `audit.py` | L'écriture du journal d'audit | Jamais de contenu, seulement une empreinte |
-| `prompts.py` | Lit un prompt `.md` (avec son en-tête : version, niveau de modèle, longueur max, température) et son schéma `.schema.json` | Une variable oubliée fait échouer l'appel (volontairement) |
+| `prompts.py` | Lit un prompt `.md` (avec son en-tête : version, niveau de modèle, longueur max) et son schéma `.schema.json` | Une variable oubliée fait échouer l'appel (volontairement) |
 | `validation.py` | Contrôle la réponse : schéma respecté, pas de balisage parasite. Adapte aussi le schéma au mode strict | Ajouté après le bug de la v5 |
 | `providers/anthropic_provider.py` | L'appel réel à Claude | Utilise le format de réponse structuré natif (`output_config`) |
 | `providers/fake_provider.py` | Le faux fournisseur pour les tests | Réponse prévisible, gratuite |
 | `prompts/smoke_test.md` | Prompt du test de bon fonctionnement | |
-| `prompts/pr_review.md` + `.schema.json` | Prompt de la revue de PR (modèle Sonnet, température 0) et format de sa réponse ; le verdict est calculé par le code | |
+| `prompts/pr_review.md` + `.schema.json` | Prompt de la revue de PR (modèle Sonnet) et format de sa réponse ; le verdict est calculé par le code | |
 | `prompts/release_notes.md` + `.schema.json` | Prompt des notes de version (modèle Sonnet) et format de sa réponse | |
 | `prompts/triage.md` + `.schema.json` | Prompt du triage (v7) et format de sa réponse. L'en-tête fixe aussi `max_tokens: 4000` | |
 
@@ -361,7 +363,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `.github/workflows/ci.yml` | Tests et lint à chaque push et PR |
 | `.github/workflows/ai-smoke-test.yml` | Smoke test manuel |
 | `.github/workflows/triage.yml` | Brique 1, déclenchée par Jira (`repository_dispatch`) ou à la main |
-| `.github/workflows/pr-review.yml` | Brique 3 : revue IA sur chaque PR (code de revue pris sur `main`) |
+| `.github/workflows/pr-review.yml` | Brique 3 : revue IA sur chaque PR (code de revue pris sur `main`), sauf les PR de pure documentation |
 | `.github/workflows/release.yml` | Brique 2 : sur un tag `v*`, tests, déploiement simulé, puis notes de version |
 | `app/` | Application fictive pour les PR de démo : `paiement.py`, `export.py` (PI-4), `messages.py` (PI-3, brique 3) |
 | `tests/` | 49 tests automatiques, dont le cas réel du balisage parasite rejoué |
@@ -417,6 +419,7 @@ PI-1 à PI-8 portent le label `poc-demo` : ce sont ceux que `demo_reset` supprim
 | `404` dans le log | Mauvaise URL Jira ou mauvaise clé de ticket | Vérifier la variable `JIRA_BASE_URL` |
 | "Réponse IA invalide après 2 tentatives" | L'IA a renvoyé deux réponses corrompues | Relancer ; si ça persiste, regarder le détail dans les avertissements du run |
 | Le flux Jira ne déclenche rien | Flux désactivé, label `poc-demo` présent, ou token GitHub expiré | Journal d'audit du flux dans Jira (code de retour de GitHub) |
+| Revue de PR en échec "unexpected keyword argument" | Argument envoyé à l'API que le SDK ne connaît pas | Le test `test_arguments_acceptes_par_le_vrai_sdk` le détecte désormais en CI |
 | La CI ne démarre pas sur une PR | GitHub attend l'accord du propriétaire | Bouton "Approve and run workflows" sur la PR |
 | Conflit sur le README dans VS Code | Branche créée sans avoir fait un pull de `main` | Toujours faire **Pull** sur `main` avant de créer une branche |
 | "Merge already in progress" | La PR n'avait plus rien à fusionner | Rafraîchir ; si la PR est vide, la fermer |

@@ -59,10 +59,10 @@ class FlakyProvider(FakeProvider):
         self.responses = [bad, good]
         self.calls = 0
 
-    def complete(self, system, user, model, max_tokens, output_schema=None, temperature=None):
+    def complete(self, system, user, model, max_tokens, output_schema=None):
         self.canned_response = self.responses[min(self.calls, 1)]
         self.calls += 1
-        return super().complete(system, user, model, max_tokens, output_schema, temperature)
+        return super().complete(system, user, model, max_tokens, output_schema)
 
 
 def test_reponse_corrompue_relancee_une_fois(settings):
@@ -93,9 +93,9 @@ def test_max_tokens_propre_au_prompt(settings):
     from tests.test_triage import RESULT
 
     class Spy(FakeProvider):
-        def complete(self, system, user, model, max_tokens, output_schema=None, temperature=None):
+        def complete(self, system, user, model, max_tokens, output_schema=None):
             self.max_tokens = max_tokens
-            return super().complete(system, user, model, max_tokens, output_schema, temperature)
+            return super().complete(system, user, model, max_tokens, output_schema)
 
     spy = Spy(json.dumps(RESULT))
     ask("triage", {k: "x" for k in ["key", "issue_type", "summary", "description", "components", "labels",

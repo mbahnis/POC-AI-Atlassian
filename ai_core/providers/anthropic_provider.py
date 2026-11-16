@@ -22,8 +22,7 @@ class AnthropicProvider:
         self._client = anthropic.Anthropic(api_key=key)
 
     def complete(
-        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None,
-        temperature: float | None = None,
+        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None
     ) -> AIResponse:
         kwargs = {}
         if output_schema:
@@ -33,10 +32,6 @@ class AnthropicProvider:
             kwargs["output_config"] = {
                 "format": {"type": "json_schema", "schema": to_strict_schema(output_schema)}
             }
-
-        if temperature is not None:
-            # 0 = réponses les plus stables d'une exécution à l'autre (utile pour une évaluation)
-            kwargs["temperature"] = temperature
 
         msg = self._client.messages.create(
             model=model,

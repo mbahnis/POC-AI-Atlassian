@@ -44,7 +44,7 @@ def ask(
         for attempts in (1, 2):
             response = provider.complete(
                 prompt.system, user_text, model, prompt.max_tokens or settings.max_tokens,
-                output_schema=prompt.output_schema, temperature=prompt.temperature,
+                output_schema=prompt.output_schema,
             )
             if prompt.output_schema is None or response.data is None:
                 break
