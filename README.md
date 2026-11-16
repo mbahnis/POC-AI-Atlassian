@@ -42,7 +42,7 @@ flowchart LR
     B --> C[💻 Code et PR]
     C -->|Brique 3| D[🔍 Revue IA vs ticket]
     D --> E[🚀 Déploiement]
-    E -->|Brique 2| F[📄 Release notes Confluence]
+    E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident en production]
     G -->|Brique 4| H[📚 Post-mortem Confluence]
 ```
@@ -204,7 +204,6 @@ docs/
 - [x] Premier appel à Claude validé en CI (smoke test)
 - [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
 - [x] Brique 1 : déclenchement automatique par Jira Automation validé (ticket créé, commentaire IA en ~30 s)
-- [x] Brique 2 : notes de version IA, versions Jira, workflow de release ([guide](docs/guides/brique-2-release.md)), en attente de validation réelle
-- [ ] Brique 2 : GitHub for Jira + flux de statut (natif), espace Confluence de test
+- [x] Brique 2 : livraison tracée validée de bout en bout le 16/11 (statuts natifs, release v1.1.0, notes de version IA dans Confluence, version Jira) ([guide](docs/guides/brique-2-release.md))
 - [ ] Brique 4 : incident vers post-mortem
 - [ ] Brique 3 : revue IA des PR *(bonus)*

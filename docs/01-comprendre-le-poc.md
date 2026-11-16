@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) validée, brique 2 (livraison tracée) construite et en cours de validation.
+> **Mis à jour le** 16/11/2026 : briques 1 (triage IA) et 2 (livraison tracée) validées en conditions réelles.
 
 ---
 
@@ -17,8 +17,8 @@ Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
 | Irritant | Conséquence | Brique qui y répond |
 |---|---|---|
 | Tickets flous, incomplets, en doublon | Allers-retours, tri manuel, bugs traités deux fois | 🧠 **1. Triage IA** ✅ |
-| Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** 🔄 |
-| Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** 🔄 |
+| Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** ✅ |
+| Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** ✅ |
 | Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 3. Revue IA des PR (à venir) |
 | Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 4. Incident vers post-mortem (à venir) |
 
@@ -44,7 +44,7 @@ Questions       5 questions précises à poser à l'auteur
 > [!IMPORTANT]
 > L'IA **ne modifie aucun champ** du ticket. Elle propose dans un commentaire, l'équipe décide. Seul un label technique `ia-triage` est ajouté pour ne pas trier deux fois.
 
-### 🚀 Brique 2 : la livraison tracée (en cours de validation)
+### 🚀 Brique 2 : la livraison tracée
 
 **Ce que voit l'équipe :**
 - un développeur nomme sa branche `PI-1-...` : le ticket passe **En cours** et affiche la branche, puis la PR ;
@@ -52,6 +52,8 @@ Questions       5 questions précises à poser à l'auteur
 - on publie une version `v1.1.0` : le déploiement apparaît dans le ticket, une **page de notes de version** rédigée par l'IA est publiée (Confluence, ou la GitHub Release à défaut), la **version Jira** est créée et chaque ticket livré reçoit un commentaire "Livré dans v1.1.0".
 
 **Ce que ça change :** plus de statuts oubliés, plus de release notes écrites à la main en fin de mois.
+
+**Validé le 16/11 :** deux PR (une correction pour PI-1, une nouveauté pour PI-4), puis la release `v1.1.0`. Les tickets ont changé de statut seuls, et en moins de 2 minutes après la publication de la release, la page Confluence était publiée, la version Jira créée et les deux tickets commentés "Livré".
 
 > [!NOTE]
 > Les statuts et l'affichage des branches, PR et déploiements sont **100 % natifs** (application GitHub for Jira + flux Automation). Le code ne fait que ce que le natif ne sait pas faire : rédiger les notes et tenir les versions Jira à jour.
