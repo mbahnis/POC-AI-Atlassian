@@ -1,0 +1,139 @@
+{
+  "type": "object",
+  "properties": {
+    "resume": {
+      "type": "string",
+      "description": "2 à 3 phrases pour un lecteur non technique : ce que cette version apporte"
+    },
+    "points_forts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 3,
+      "description": "Les 1 à 3 changements les plus importants, une phrase chacun"
+    },
+    "nouveautes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titre": {
+            "type": "string",
+            "description": "Titre court orienté utilisateur"
+          },
+          "description": {
+            "type": "string",
+            "description": "1 à 2 phrases : l'effet pour l'utilisateur, puis le détail utile"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Clés Jira concernées"
+          },
+          "prs": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Numéros de PR concernées"
+          }
+        },
+        "required": [
+          "titre",
+          "description",
+          "tickets",
+          "prs"
+        ]
+      }
+    },
+    "corrections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titre": {
+            "type": "string",
+            "description": "Titre court orienté utilisateur"
+          },
+          "description": {
+            "type": "string",
+            "description": "1 à 2 phrases : l'effet pour l'utilisateur, puis le détail utile"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Clés Jira concernées"
+          },
+          "prs": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Numéros de PR concernées"
+          }
+        },
+        "required": [
+          "titre",
+          "description",
+          "tickets",
+          "prs"
+        ]
+      }
+    },
+    "technique": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titre": {
+            "type": "string",
+            "description": "Titre court orienté utilisateur"
+          },
+          "description": {
+            "type": "string",
+            "description": "1 à 2 phrases : l'effet pour l'utilisateur, puis le détail utile"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Clés Jira concernées"
+          },
+          "prs": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Numéros de PR concernées"
+          }
+        },
+        "required": [
+          "titre",
+          "description",
+          "tickets",
+          "prs"
+        ]
+      }
+    },
+    "points_attention": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "resume",
+    "points_forts",
+    "nouveautes",
+    "corrections",
+    "technique",
+    "points_attention"
+  ]
+}
