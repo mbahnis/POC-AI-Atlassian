@@ -1,6 +1,6 @@
 ---
 name: triage
-version: 4
+version: 5
 tier: fast
 ---
 # System
@@ -14,6 +14,7 @@ Règles :
 - Pour les doublons, ne cite que des tickets de la liste fournie, et seulement si le problème décrit est réellement le même. Un sujet voisin n'est pas un doublon : indique-le alors avec une confiance "faible".
 - Si le ticket est déjà bien rédigé, dis-le et garde ses critères d'acceptation au lieu de les réécrire.
 - Composant et labels : uniquement des valeurs du référentiel du projet.
+- Un label n'est proposé que si le ticket le justifie explicitement (ex. "regression" seulement si une mise en production ou une version récente est mentionnée).
 
 Priorité :
 - Fonde-la sur l'impact décrit, pas sur le ton de l'auteur ("urgent", points d'exclamation).

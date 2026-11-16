@@ -42,6 +42,20 @@ def load_config() -> dict:
     return yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8"))
 
 
+def normalize(result: dict, config: dict) -> dict:
+    """Applique les règles métier que le schéma strict ne peut pas imposer.
+
+    Le code a le dernier mot : une valeur hors référentiel est retirée plutôt qu'affichée.
+    """
+    result = dict(result)
+    result["qualite_ticket"] = max(1, min(5, int(result.get("qualite_ticket") or 1)))
+    if result.get("composant") not in config["components"]:
+        result["composant"] = None
+    result["labels"] = [label for label in result.get("labels") or [] if label in config["labels"]][:3]
+    result["questions_a_poser"] = (result.get("questions_a_poser") or [])[:5]
+    return result
+
+
 def format_candidates(issues: list[dict], exclude_key: str, limit: int) -> str:
     lines = [
         f"- {i['key']} : {i['fields']['summary']}"
@@ -135,6 +149,7 @@ def triage(key: str, dry_run: bool = False, force: bool = False, jira: JiraClien
     )
     # Réponse structurée garantie par l'API ; extract_json reste en secours pour un fournisseur sans ce mécanisme
     result = response.data if response.data is not None else extract_json(response.text)
+    result = normalize(result, config)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
     if dry_run:

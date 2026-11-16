@@ -3,6 +3,7 @@
 import json
 import os
 
+from ..validation import to_strict_schema
 from .base import AIResponse
 
 # Nom de l'outil "virtuel" que Claude est obligé d'appeler pour rendre une réponse structurée
@@ -33,7 +34,9 @@ class AnthropicProvider:
             kwargs["tools"] = [{
                 "name": STRUCTURED_TOOL,
                 "description": "Transmet le résultat final de l'analyse.",
-                "input_schema": output_schema,
+                "input_schema": to_strict_schema(output_schema),
+                # strict : l'API contraint la génération au schéma (structured outputs)
+                "strict": True,
             }]
             kwargs["tool_choice"] = {"type": "tool", "name": STRUCTURED_TOOL}
 

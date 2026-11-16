@@ -29,6 +29,8 @@ def test_sortie_structuree_force_l_outil(monkeypatch):
     response = provider.complete("sys", "user", "m", 100, output_schema=schema)
 
     assert fake.kwargs["tool_choice"] == {"type": "tool", "name": STRUCTURED_TOOL}
-    assert fake.kwargs["tools"][0]["input_schema"] == schema
+    tool = fake.kwargs["tools"][0]
+    assert tool["strict"] is True
+    assert tool["input_schema"]["additionalProperties"] is False
     # Les guillemets dans le texte ne posent plus de problème
     assert response.data == {"priorite": 'Haute (bouton "Payer")'}
