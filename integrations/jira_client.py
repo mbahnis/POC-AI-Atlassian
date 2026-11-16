@@ -67,18 +67,44 @@ class JiraClient:
         params = {"fields": ",".join(fields)} if fields else None
         return self._check(self.session.get(self._url(f"issue/{key}"), params=params)).json()
 
-    def create_issue(self, project_key: str, summary: str, description: str,
-                     issue_type: str = "Task", labels: list[str] | None = None) -> str:
-        body = {
-            "fields": {
-                "project": {"key": project_key},
-                "summary": summary,
-                "description": adf_text(description),
-                "issuetype": {"name": issue_type},
-                "labels": labels or [],
-            }
+    def create_issue(self, project_key: str, summary: str, description: str | dict,
+                     issue_type: str = "Task", labels: list[str] | None = None,
+                     priority: str | None = None) -> str:
+        """Crée un ticket. La description peut être du texte simple ou un document ADF déjà construit.
+
+        Si la priorité est refusée (champ absent de l'écran de création, nom inconnu), le ticket est créé sans.
+        """
+        fields = {
+            "project": {"key": project_key},
+            "summary": summary,
+            "description": description if isinstance(description, dict) else adf_text(description),
+            "issuetype": {"name": issue_type},
+            "labels": labels or [],
         }
-        return self._check(self.session.post(self._url("issue"), json=body)).json()["key"]
+        if priority:
+            resp = self.session.post(self._url("issue"), json={"fields": {**fields, "priority": {"name": priority}}})
+            if resp.status_code < 400:
+                return resp.json()["key"]
+            print(f"::warning::Priorité '{priority}' refusée par Jira, ticket créé sans priorité")
+        return self._check(self.session.post(self._url("issue"), json={"fields": fields})).json()["key"]
+
+    def get_comments(self, key: str) -> list[dict]:
+        """Commentaires du ticket, du plus ancien au plus récent : auteur, date, texte brut."""
+        data = self._check(self.session.get(self._url(f"issue/{key}/comment"),
+                                            params={"orderBy": "created", "maxResults": 100})).json()
+        return [{"author": c["author"]["displayName"], "created": c["created"], "text": adf_to_text(c["body"])}
+                for c in data.get("comments", [])]
+
+    def get_status_history(self, key: str) -> list[dict]:
+        """Changements de statut du ticket (date, de, vers), du plus ancien au plus récent."""
+        data = self._check(self.session.get(self._url(f"issue/{key}/changelog"), params={"maxResults": 100})).json()
+        history = []
+        for entry in data.get("values", []):
+            for item in entry.get("items", []):
+                if item.get("field") == "status":
+                    history.append({"created": entry["created"], "from": item.get("fromString"),
+                                    "to": item.get("toString"), "author": entry["author"]["displayName"]})
+        return history
 
     def add_comment(self, key: str, body: str | dict) -> None:
         """Ajoute un commentaire : texte simple, ou document ADF déjà construit (mise en forme riche)."""

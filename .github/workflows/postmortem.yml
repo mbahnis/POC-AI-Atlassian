@@ -1,0 +1,63 @@
+name: Brique 4 - Post-mortem IA
+
+# Déclenché par un flux Jira Automation quand un incident passe "Terminé"
+# (requête web vers l'API GitHub, event_type "jira-incident-resolved"), ou à la main.
+on:
+  repository_dispatch:
+    types: [jira-incident-resolved]
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: "Clé de l'incident (ex. PIOPS-1)"
+        required: true
+      dry_run:
+        description: "Générer sans publier"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: postmortem-${{ github.event.client_payload.issue_key || inputs.issue_key }}
+
+jobs:
+  postmortem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+      CONFLUENCE_SPACE_KEY: ${{ vars.CONFLUENCE_SPACE_KEY }}
+      CONFLUENCE_BASE_URL: ${{ vars.CONFLUENCE_BASE_URL }}
+      CONFLUENCE_POSTMORTEM_PARENT: ${{ vars.CONFLUENCE_POSTMORTEM_PARENT || 'Post-mortems' }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      AI_MODEL_SMART: ${{ vars.AI_MODEL_SMART || 'claude-sonnet-5-5' }}
+      ISSUE_KEY: ${{ github.event.client_payload.issue_key || inputs.issue_key }}
+      DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+    steps:
+      - name: Valider la clé
+        run: |
+          if ! [[ "$ISSUE_KEY" =~ ^[A-Z][A-Z0-9]+-[0-9]+$ ]]; then
+            echo "::error::Clé d'incident invalide : '$ISSUE_KEY'"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Brouillon de post-mortem
+        run: python -m scripts.postmortem "$ISSUE_KEY" $DRY_RUN
+      - name: Publier le brouillon et le journal d'audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postmortem-${{ env.ISSUE_KEY }}
+          path: |
+            postmortem.html
+            ai-audit.jsonl
+          if-no-files-found: ignore

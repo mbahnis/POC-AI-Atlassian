@@ -1,0 +1,137 @@
+{
+  "type": "object",
+  "properties": {
+    "titre": {
+      "type": "string",
+      "description": "Titre court et factuel de l'incident"
+    },
+    "resume": {
+      "type": "string",
+      "description": "3 phrases maximum : ce qui s'est passé, l'impact, comment c'est rentré dans l'ordre"
+    },
+    "impact": {
+      "type": "string",
+      "description": "Qui a été touché, comment, dans quelle proportion si connu"
+    },
+    "chronologie": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "heure": {
+            "type": "string"
+          },
+          "evenement": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "heure",
+          "evenement"
+        ]
+      }
+    },
+    "cause_probable": {
+      "type": "object",
+      "properties": {
+        "hypothese": {
+          "type": "string"
+        },
+        "confiance": {
+          "type": "string",
+          "enum": [
+            "forte",
+            "moyenne",
+            "faible"
+          ]
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Faits qui appuient l'hypothèse"
+        }
+      },
+      "required": [
+        "hypothese",
+        "confiance",
+        "elements"
+      ]
+    },
+    "facteurs_contributifs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ce_qui_a_bien_fonctionne": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "a_ameliorer": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Action concrète et vérifiable"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "prevention",
+              "detection",
+              "reponse"
+            ]
+          },
+          "priorite": {
+            "type": "string",
+            "enum": [
+              "haute",
+              "moyenne",
+              "basse"
+            ]
+          },
+          "responsable": {
+            "type": "string",
+            "description": "Rôle proposé (jamais un nom de personne)"
+          }
+        },
+        "required": [
+          "action",
+          "type",
+          "priorite",
+          "responsable"
+        ]
+      }
+    },
+    "questions_ouvertes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "titre",
+    "resume",
+    "impact",
+    "chronologie",
+    "cause_probable",
+    "facteurs_contributifs",
+    "ce_qui_a_bien_fonctionne",
+    "a_ameliorer",
+    "actions",
+    "questions_ouvertes"
+  ]
+}

@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Moi. Ce document me permet de tout retrouver : ce qu'on a fait, dans quel ordre, pourquoi, ce qui a cassé et ce que ça nous a appris.
 > **Comment le lire ?** La partie 1 donne la vue d'ensemble. La partie 2 raconte le projet dans l'ordre. Les parties suivantes sont des références (glossaire, fichiers, accès, dépannage, questions pièges).
-> **Dernière mise à jour :** 16/11/2026 (briques 1, 2 et 3 validées).
+> **Dernière mise à jour :** 16/11/2026 (briques 1, 2 et 3 validées, brique 4 construite).
 
 ## Sommaire
 
@@ -41,7 +41,7 @@ flowchart LR
     D --> E[🚀 Déploiement]
     E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident]
-    G -->|Brique 4| H[📚 Post-mortem Confluence]
+    G -->|Brique 4 🔄| H[📚 Post-mortem Confluence]
 ```
 
 ### L'architecture en une image
@@ -277,6 +277,24 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 
 **Bug introduit puis corrigé :** j'avais ajouté un réglage "température 0" pour stabiliser les réponses. Le SDK Anthropic 2.8 n'accepte plus ce paramètre : toutes les revues de PR plantaient (repéré sur la PR #17). Les tests simulaient l'API et ne l'ont pas vu. Correctif : réglage retiré, et nouveau test qui compare les arguments envoyés à la signature réelle du SDK. **Leçon : un faux fournisseur teste notre logique, pas le contrat de l'API ; il faut au moins un test qui vérifie ce contrat.**
 
+### 📅 16/11/2026 : brique 4, de l'alerte au post-mortem
+
+**Blocage d'environnement :** Jira Service Management (JSM) n'est pas activé sur la sandbox. Créer un projet JSM affiche "Impossible d'ajouter à la sandbox", et les projets JSM d'exemple (IT Operations...) sont inaccessibles. **Décision :** incidents dans un projet **Jira Software dédié** `PIOPS` ("POC IA - Exploitation", Kanban), tickets "Bug" avec le label `incident` ; code configurable pour basculer sur JSM (2 variables). Demande d'activation de JSM à faire auprès de l'administrateur.
+
+**Comment ça marche ([décision 0011](decisions/0011-incident-postmortem.md)) :**
+1. `incident-alert.yml` reçoit une alerte au format **Alertmanager** (en démo : scénario `memoire-saturee` déclenché à la main ; en réel : un relais qui appelle `repository_dispatch` `alert-fired`).
+2. `scripts/incident_open.py` crée l'incident (priorité déduite de la gravité, labels `incident`, `alerte-<empreinte>`, `service-...`) avec le **dernier déploiement** en contexte. Une alerte répétée commente l'incident ouvert ; une alerte résolue ne le ferme pas.
+3. En démo, une **chronologie fictive** (fichier `.chronologie.yaml`) est publiée en commentaires, comme si l'astreinte avait travaillé : saturation mémoire après la v1.1.0, liée à l'export CSV sans pagination (le PI-4 livré en brique 2 : le fil rouge se boucle).
+4. Quand l'incident passe **Terminé**, un flux Automation appelle `postmortem.yml` (`jira-incident-resolved`).
+5. `scripts/postmortem.py` lit description, commentaires et historique des statuts, **calcule la durée**, récupère les déploiements récents, et demande à l'IA (Sonnet) un brouillon structuré.
+6. Page Confluence **"Post-mortem PIOPS-x : ..."** sous "Post-mortems", marquée **BROUILLON À RELIRE** ; commentaire dans l'incident ; label `postmortem-brouillon`.
+
+**Garde-fous :** blameless (consigne + noms des auteurs Jira retirés par le code), cause = hypothèse avec confiance, aucun ticket d'action créé automatiquement, durée calculée par le code.
+
+**Limite connue :** les prénoms écrits dans le texte des commentaires (ex. "Astreinte (Léa)") ne sont retirés que par la consigne au modèle : à vérifier à la relecture.
+
+**État :** code et tests prêts (59 tests). Reste : projet `PIOPS`, page "Post-mortems", 2 variables GitHub, flux "incident résolu", puis test complet.
+
 ---
 
 ## 3. Glossaire
@@ -304,6 +322,9 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | **GitHub Release** | La page d'une version sur GitHub, avec ses notes | Publication de secours des notes de version |
 | **Environnement GitHub** | Un nom de cible de déploiement (`production`), sur lequel on peut mettre des règles (validation manuelle) | Job `deploy` de la brique 2 |
 | **GitHub for Jira** | Application officielle Atlassian qui affiche branches, PR et déploiements GitHub dans les tickets | Partie native de la brique 2 |
+| **Post-mortem** | Analyse écrite après un incident : ce qui s'est passé, pourquoi, et comment éviter que ça recommence | Brique 4 |
+| **Blameless** | "Sans recherche de coupable" : on analyse les systèmes et processus, pas les erreurs des personnes | Principe du post-mortem de la brique 4 |
+| **Alertmanager** | Le composant de Prometheus qui envoie les alertes (webhook JSON) | Format d'entrée de la brique 4 |
 | **Diff** | La liste des lignes ajoutées et supprimées par une PR | Ce que la brique 3 compare aux critères |
 | **Température** | Réglage du modèle qui rend les réponses plus ou moins variées ; plus accepté par le SDK actuel pour ces modèles | Essayé puis retiré (bug du 16/11) |
 | **Critères d'acceptation** | Les conditions vérifiables qui disent quand un ticket est terminé | Lus par la brique 3 dans la description du ticket |
@@ -331,6 +352,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `providers/anthropic_provider.py` | L'appel réel à Claude | Utilise le format de réponse structuré natif (`output_config`) |
 | `providers/fake_provider.py` | Le faux fournisseur pour les tests | Réponse prévisible, gratuite |
 | `prompts/smoke_test.md` | Prompt du test de bon fonctionnement | |
+| `prompts/postmortem.md` + `.schema.json` | Prompt du post-mortem (Sonnet, blameless) et format de sa réponse | |
 | `prompts/pr_review.md` + `.schema.json` | Prompt de la revue de PR (modèle Sonnet) et format de sa réponse ; le verdict est calculé par le code | |
 | `prompts/release_notes.md` + `.schema.json` | Prompt des notes de version (modèle Sonnet) et format de sa réponse | |
 | `prompts/triage.md` + `.schema.json` | Prompt du triage (v7) et format de sa réponse. L'en-tête fixe aussi `max_tokens: 4000` | |
@@ -349,6 +371,8 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | Script | Rôle | Commande |
 |---|---|---|
 | `smoke_test.py` | Vérifie la chaîne IA de bout en bout | `python -m scripts.smoke_test` |
+| `incident_open.py` | Brique 4 : alerte (format Alertmanager) vers incident Jira, avec dernier déploiement ; chronologie de démo optionnelle | `python -m scripts.incident_open demo/alerts/memoire-saturee.json [--timeline ...]` |
+| `postmortem.py` | Brique 4 : brouillon de post-mortem IA d'un incident, publié dans Confluence | `python -m scripts.postmortem PIOPS-1 [--dry-run]` |
 | `review_pr.py` | Brique 3 : revue d'une PR contre les critères du ticket, commentaire PR unique, commentaire Jira si le verdict change | `python -m scripts.review_pr --pr 14 [--dry-run]` |
 | `release_notes.py` | Brique 2 : notes de version d'une release, publication Confluence ou GitHub, version Jira et commentaires | `python -m scripts.release_notes --tag v1.1.0 [--dry-run]` |
 | `triage_ticket.py` | Brique 1 : triage d'un ticket. Envoie les candidats avec un extrait de description. Contient aussi `normalize()`, les règles métier appliquées par le code | `python -m scripts.triage_ticket PI-2 [--dry-run] [--force]` |
@@ -363,10 +387,12 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `.github/workflows/ci.yml` | Tests et lint à chaque push et PR |
 | `.github/workflows/ai-smoke-test.yml` | Smoke test manuel |
 | `.github/workflows/triage.yml` | Brique 1, déclenchée par Jira (`repository_dispatch`) ou à la main |
+| `.github/workflows/incident-alert.yml` | Brique 4 : alerte vers incident (scénario de démo ou `repository_dispatch` `alert-fired`) |
+| `.github/workflows/postmortem.yml` | Brique 4 : post-mortem IA (flux Jira `jira-incident-resolved` ou à la main) |
 | `.github/workflows/pr-review.yml` | Brique 3 : revue IA sur chaque PR (code de revue pris sur `main`), sauf les PR de pure documentation |
 | `.github/workflows/release.yml` | Brique 2 : sur un tag `v*`, tests, déploiement simulé, puis notes de version |
 | `app/` | Application fictive pour les PR de démo : `paiement.py`, `export.py` (PI-4), `messages.py` (PI-3, brique 3) |
-| `tests/` | 49 tests automatiques, dont le cas réel du balisage parasite rejoué |
+| `tests/` | 59 tests automatiques, dont le cas réel du balisage parasite rejoué |
 
 ---
 
@@ -378,6 +404,8 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | Token API Atlassian | Secret GitHub `JIRA_API_TOKEN` (+ `JIRA_EMAIL`) | Moi, sur id.atlassian.com | Lire et écrire dans Jira avec mes droits | Révoquer |
 | URL Jira | Variable GitHub `JIRA_BASE_URL` | | `https://one-atlas-bfqf-sandbox.atlassian.net` | |
 | Espace Confluence | Variables GitHub `CONFLUENCE_SPACE_KEY` (`POCIA`), `CONFLUENCE_PARENT_TITLE`, `CONFLUENCE_BASE_URL` (`https://one-atlas-bfqf.atlassian.net`) | | Où publier les notes (sinon GitHub Release) | Supprimer l'espace POCIA si besoin |
+| Projet Jira `PIOPS` | Site sandbox | Moi | Incidents de la brique 4 (en attendant JSM) | |
+| Variables `INCIDENT_PROJECT_KEY`, `CONFLUENCE_POSTMORTEM_PARENT` | GitHub | Moi | Où créer les incidents, où publier les post-mortems | |
 | GitHub for Atlassian | App installée sur le site sandbox, reliée au dépôt | Moi | Branches, PR, déploiements visibles dans Jira | Désinstaller si besoin |
 | `GITHUB_TOKEN` | Fourni automatiquement par GitHub Actions | GitHub | Lire les PR, créer la Release (droit `contents: write` dans le workflow) | Rien à faire |
 | Token GitHub fine-grained | En-tête du flux Jira Automation | Moi, sur GitHub | Déclencher un workflow sur ce dépôt uniquement | Révoquer |
@@ -493,5 +521,6 @@ Je ne suis pas juriste, donc je ne m'engage pas sur la conformité. Ce que le PO
 
 - [ ] Passer la priorité par défaut du projet à **Moyenne**
 - [ ] Demander l'activation de Rovo à l'admin Atlassian de CBTW (facultatif) pour compléter la comparaison sur PI-10
-- [ ] Brique 4 : incident vers post-mortem (Jira Service Management est disponible sur la sandbox)
+- [ ] Brique 4 : créer `PIOPS`, la page "Post-mortems", les 2 variables et le flux "incident résolu", puis tester
+- [ ] Demander l'activation de Jira Service Management sur la sandbox, puis basculer les incidents
 - [ ] Remplacer mon compte par un compte de service pour signer les commentaires (pour la version client)

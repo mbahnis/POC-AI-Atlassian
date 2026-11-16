@@ -91,7 +91,7 @@ flowchart LR
 
 | | |
 |---|---|
-| **Ce qu'on fait** | Une alerte (Alertmanager ou CloudWatch) crée un ticket d'incident dans Jira. A la clôture, l'IA rédige un brouillon de post-mortem dans Confluence : chronologie, cause probable, actions correctives. |
+| **Ce qu'on fait** | Une alerte (format Alertmanager, adaptable à CloudWatch, Grafana, Datadog) crée un ticket d'incident dans Jira, avec le dernier déploiement en contexte. A la clôture, l'IA rédige un brouillon de post-mortem dans Confluence : chronologie, cause probable, actions correctives. |
 | **Pourquoi c'est bien** | Très parlant pour les équipes d'astreinte : on passe d'une page blanche à un brouillon relu et corrigé par l'équipe. |
 | **Ce que ça résout** | Post-mortems tardifs ou absents, perte de connaissance après incident, difficulté à capitaliser sur les erreurs passées. |
 
@@ -206,4 +206,5 @@ docs/
 - [x] Brique 1 : déclenchement automatique par Jira Automation validé (ticket créé, commentaire IA en ~30 s)
 - [x] Brique 2 : livraison tracée validée de bout en bout le 16/11 (statuts natifs, release v1.1.0, notes de version IA dans Confluence, version Jira) ([guide](docs/guides/brique-2-release.md))
 - [x] Brique 3 : revue IA des PR contre les critères du ticket, validée le 16/11 sur la PR de démo #15 (PI-3) ([guide](docs/guides/brique-3-revue-pr.md))
-- [ ] Brique 4 : incident vers post-mortem (projet Service Management dédié + page Post-mortems dans Confluence)
+- [x] Brique 4 : alerte vers incident, brouillon de post-mortem IA dans Confluence ([guide](docs/guides/brique-4-incident-postmortem.md)), en attente de validation réelle
+- [ ] Activer Jira Service Management sur la sandbox (demande à l'administrateur) puis basculer les incidents dessus

@@ -1,0 +1,8 @@
+# Chronologie fictive de la réponse à incident, publiée en commentaires pour la démo.
+# Elle imite ce qu'une équipe d'astreinte écrit dans le ticket pendant l'incident.
+# Les heures sont dans le texte : les commentaires sont publiés au moment de la démo.
+- "02:03 Astreinte (Léa) : alerte prise en compte. Les pods api-commandes redémarrent toutes les 2 minutes (OOMKilled). Les paiements échouent pour une partie des clients."
+- "02:11 Astreinte (Léa) : la consommation mémoire monte régulièrement depuis la mise en production v1.1.0 d'hier. Hypothèse : fuite mémoire dans l'export CSV des commandes, qui charge toutes les commandes en mémoire."
+- "02:18 Astreinte (Léa) : mémoire des pods passée de 512 Mo à 1 Go en urgence. Les redémarrages s'arrêtent, les paiements repassent."
+- "02:40 Astreinte (Léa) : situation stable depuis 20 minutes. Taux d'erreur revenu à la normale. Un export CSV lancé à 01:50 par la logistique coïncide avec le début de la hausse."
+- "09:15 Dev (Karim) : confirmé, l'export lit toutes les commandes sans pagination. Correctif prévu (lecture par lots). La limite à 1 Go est conservée en attendant."
