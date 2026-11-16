@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Moi. Ce document me permet de tout retrouver : ce qu'on a fait, dans quel ordre, pourquoi, ce qui a cassé et ce que ça nous a appris.
 > **Comment le lire ?** La partie 1 donne la vue d'ensemble. La partie 2 raconte le projet dans l'ordre. Les parties suivantes sont des références (glossaire, fichiers, accès, dépannage, questions pièges).
-> **Dernière mise à jour :** 16/11/2026 (briques 1, 2 et 3 validées, brique 4 construite).
+> **Dernière mise à jour :** 16/11/2026 (les 4 briques validées).
 
 ## Sommaire
 
@@ -41,7 +41,7 @@ flowchart LR
     D --> E[🚀 Déploiement]
     E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident]
-    G -->|Brique 4 🔄| H[📚 Post-mortem Confluence]
+    G -->|Brique 4 ✅| H[📚 Post-mortem Confluence]
 ```
 
 ### L'architecture en une image
@@ -293,7 +293,28 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 
 **Limite connue :** les prénoms écrits dans le texte des commentaires (ex. "Astreinte (Léa)") ne sont retirés que par la consigne au modèle : à vérifier à la relecture.
 
-**État :** code et tests prêts (59 tests). Reste : projet `PIOPS`, page "Post-mortems", 2 variables GitHub, flux "incident résolu", puis test complet.
+**Mise en place réalisée (16/11) :**
+- projet **POC IA - Exploitation** (`PIOPS`, Kanban, géré par l'entreprise), avec des états renommés pour les incidents : **Nouveau, En investigation, Atténué, Terminé** (le nom par défaut "Sélectionné pour le développement" dépassait d'ailleurs la limite de 30 caractères de Jira) ;
+- page **Post-mortems** dans l'espace Confluence POC IA ; variables `INCIDENT_PROJECT_KEY` et `CONFLUENCE_POSTMORTEM_PARENT` ;
+- flux **"IA - Post-mortem à la résolution"**.
+
+**Bug de configuration du flux :** "Terminé" avait été saisi dans le champ **"De l'état"** au lieu de **"À l'état"** : le flux ne se déclenchait qu'en *sortant* de Terminé. Le journal d'audit du flux ne montrait que sa création. Corrigé, puis test relancé.
+
+**Le test complet (PIOPS-1) :**
+
+| Étape | Résultat |
+|---|---|
+| Alerte de démo | PIOPS-1 créé, priorité Critique, labels `incident`/`alerte-...`/`service-...`, dernier déploiement v1.1.0 en contexte, 5 commentaires de chronologie |
+| Passage à Terminé | Flux, puis workflow post-mortem automatique |
+| Post-mortem | Page "Post-mortem PIOPS-1 : Saturation mémoire et redémarrages en boucle..." publiée, badge BROUILLON À RELIRE, commentaire dans PIOPS-1 |
+| Blameless | Aucun prénom (Léa, Karim) dans le post-mortem : "l'astreinte", "la logistique" |
+
+**Défauts constatés et corrigés (PR de finition) :**
+- **Durée fausse sur le fond** : j'avais calculé la durée de vie du *ticket* (1 h 29), pas celle de l'incident. L'IA l'a elle-même relevé dans la section Impact ("la durée du ticket ne mesure pas forcément l'impact réel"). Correction : **durée d'impact** (début de l'alerte jusqu'au premier passage à "Atténué") et **durée totale** (jusqu'à "Terminé"), calculées par le code.
+- **Dates incohérentes dans la démo** : l'alerte était figée au 15/11, avant le déploiement qu'on lui attribuait. Correction : en démo, l'alerte démarre 45 minutes avant le lancement, et les heures de la chronologie sont calculées à partir d'elle.
+- **Trop d'actions et de questions** (8 et 9) : plafond à 5 chacune, classées par importance (consigne + code).
+
+**Leçon :** une IA bien cadrée peut corriger un défaut des données qu'on lui donne, au lieu de le recopier. Mais c'est au code de fournir les bons chiffres.
 
 ---
 
@@ -322,6 +343,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | **GitHub Release** | La page d'une version sur GitHub, avec ses notes | Publication de secours des notes de version |
 | **Environnement GitHub** | Un nom de cible de déploiement (`production`), sur lequel on peut mettre des règles (validation manuelle) | Job `deploy` de la brique 2 |
 | **GitHub for Jira** | Application officielle Atlassian qui affiche branches, PR et déploiements GitHub dans les tickets | Partie native de la brique 2 |
+| **Durée d'impact** | Du début de l'alerte au rétablissement du service (statut "Atténué") : ce que les utilisateurs ont subi | Calculée par la brique 4 |
 | **Post-mortem** | Analyse écrite après un incident : ce qui s'est passé, pourquoi, et comment éviter que ça recommence | Brique 4 |
 | **Blameless** | "Sans recherche de coupable" : on analyse les systèmes et processus, pas les erreurs des personnes | Principe du post-mortem de la brique 4 |
 | **Alertmanager** | Le composant de Prometheus qui envoie les alertes (webhook JSON) | Format d'entrée de la brique 4 |
@@ -392,7 +414,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `.github/workflows/pr-review.yml` | Brique 3 : revue IA sur chaque PR (code de revue pris sur `main`), sauf les PR de pure documentation |
 | `.github/workflows/release.yml` | Brique 2 : sur un tag `v*`, tests, déploiement simulé, puis notes de version |
 | `app/` | Application fictive pour les PR de démo : `paiement.py`, `export.py` (PI-4), `messages.py` (PI-3, brique 3) |
-| `tests/` | 59 tests automatiques, dont le cas réel du balisage parasite rejoué |
+| `tests/` | 62 tests automatiques, dont le cas réel du balisage parasite rejoué |
 
 ---
 
@@ -521,6 +543,5 @@ Je ne suis pas juriste, donc je ne m'engage pas sur la conformité. Ce que le PO
 
 - [ ] Passer la priorité par défaut du projet à **Moyenne**
 - [ ] Demander l'activation de Rovo à l'admin Atlassian de CBTW (facultatif) pour compléter la comparaison sur PI-10
-- [ ] Brique 4 : créer `PIOPS`, la page "Post-mortems", les 2 variables et le flux "incident résolu", puis tester
 - [ ] Demander l'activation de Jira Service Management sur la sandbox, puis basculer les incidents
 - [ ] Remplacer mon compte par un compte de service pour signer les commentaires (pour la version client)
