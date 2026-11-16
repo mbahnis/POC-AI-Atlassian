@@ -1,0 +1,59 @@
+name: Brique 4 - Alerte vers incident
+
+# Deux entrées possibles :
+# - réelle : un relais (Alertmanager, CloudWatch, Grafana...) appelle l'API GitHub "repository_dispatch"
+#   avec event_type "alert-fired" et l'alerte au format Alertmanager dans client_payload.alert
+# - démo : Actions > Brique 4 - Alerte vers incident > Run workflow, en choisissant un scénario
+on:
+  repository_dispatch:
+    types: [alert-fired]
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Scénario d'alerte (fichier dans demo/alerts/)"
+        type: choice
+        options: [memoire-saturee]
+        default: memoire-saturee
+      chronologie:
+        description: "Démo : ajouter les commentaires simulant la réponse de l'astreinte"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  incident:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+      INCIDENT_PROJECT_KEY: ${{ vars.INCIDENT_PROJECT_KEY || 'PIOPS' }}
+      INCIDENT_ISSUE_TYPE: ${{ vars.INCIDENT_ISSUE_TYPE || 'Bug' }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SCENARIO: ${{ inputs.scenario || 'memoire-saturee' }}
+      # Alerte reçue de l'extérieur, passée par variable d'environnement (pas d'injection dans la commande)
+      ALERT_JSON: ${{ toJson(github.event.client_payload.alert) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Préparer l'alerte
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            printf '%s' "$ALERT_JSON" > alert.json
+            echo "TIMELINE=" >> "$GITHUB_ENV"
+          else
+            if ! [[ "$SCENARIO" =~ ^[a-z0-9-]+$ ]]; then echo "::error::Scénario invalide"; exit 1; fi
+            cp "demo/alerts/$SCENARIO.json" alert.json
+            if [ "${{ inputs.chronologie }}" = "true" ]; then
+              echo "TIMELINE=--timeline demo/alerts/$SCENARIO.chronologie.yaml" >> "$GITHUB_ENV"
+            fi
+          fi
+      - name: Créer ou mettre à jour l'incident
+        run: python -m scripts.incident_open alert.json $TIMELINE

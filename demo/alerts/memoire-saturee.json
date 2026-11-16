@@ -1,0 +1,22 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "poc-ia-jira",
+  "groupKey": "{}:{alertname=\"MemoireSaturee\"}",
+  "commonLabels": {"alertname": "MemoireSaturee", "service": "api-commandes", "severity": "critical", "env": "production"},
+  "commonAnnotations": {
+    "summary": "Mémoire saturée sur api-commandes (98 %)",
+    "description": "La mémoire utilisée par les pods api-commandes dépasse 95 % depuis 5 minutes. Les pods redémarrent en boucle (OOMKilled) et les validations de panier échouent.",
+    "runbook_url": "https://wiki.maison-lumen.example/runbooks/api-commandes"
+  },
+  "externalURL": "https://alertmanager.maison-lumen.example",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {"alertname": "MemoireSaturee", "service": "api-commandes", "severity": "critical", "env": "production", "instance": "api-commandes-7d9f8b6c4-x2k8p"},
+      "annotations": {"summary": "Mémoire saturée sur api-commandes (98 %)"},
+      "startsAt": "2026-11-15T01:58:00Z",
+      "fingerprint": "a3f9c2e1b7d04e55"
+    }
+  ]
+}
