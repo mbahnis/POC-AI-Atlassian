@@ -1,6 +1,6 @@
 ---
 name: postmortem
-version: 1
+version: 2
 tier: smart
 max_tokens: 6000
 ---
@@ -19,6 +19,7 @@ Règles :
 - Chronologie : reprends les heures écrites dans les commentaires quand elles existent, sinon les dates des événements fournis. Une ligne par événement important.
 - Actions correctives : concrètes, vérifiables, chacune classée en prévention (éviter que ça se reproduise), détection (le voir plus tôt) ou réponse (mieux réagir). Propose un rôle responsable, pas une personne.
 - Ce que tu ignores va dans "questions_ouvertes" : c'est ce que l'équipe devra compléter à la relecture.
+- 5 actions et 5 questions ouvertes au maximum, classées de la plus importante à la moins importante.
 - Les balises comme [EMAIL] ou [IP] remplacent des données masquées.
 
 # User
@@ -29,7 +30,7 @@ Priorité : $priority
 Statut : $status
 Ouvert le : $created
 Résolu le : $resolved
-Durée calculée : $duration
+Durées calculées par le code (à reprendre telles quelles, ne pas les recalculer) : $duration
 
 ## Description
 $description

@@ -8,7 +8,7 @@
 | L'équipe intervient | Elle commente l'incident : la chronologie se construit au fil de l'eau |
 | L'incident passe **Terminé** | L'IA rédige un **brouillon de post-mortem** dans Confluence (statut "BROUILLON À RELIRE") et commente l'incident avec le lien |
 
-Le brouillon contient : résumé, impact, durée (**calculée par le code**), chronologie, **cause probable avec un niveau de confiance**, facteurs contributifs, ce qui a bien fonctionné, ce qui est à améliorer, **actions correctives proposées** (prévention, détection, réponse) et **questions ouvertes** pour la revue.
+Le brouillon contient : résumé, impact, **durée d'impact** (début de l'alerte jusqu'au passage à "Atténué") et **durée totale** (jusqu'à "Terminé"), toutes deux **calculées par le code**, chronologie, **cause probable avec un niveau de confiance**, facteurs contributifs, ce qui a bien fonctionné, ce qui est à améliorer, **actions correctives proposées** (prévention, détection, réponse) et **questions ouvertes** pour la revue, 5 au plus chacune.
 
 > [!IMPORTANT]
 > **Principe "blameless"** (sans recherche de coupable) : l'IA décrit des rôles, jamais des personnes, et les noms des auteurs Jira sont retirés par le code s'il en reste. **Aucun ticket d'action n'est créé** : l'équipe choisit en revue lesquels ouvrir.
@@ -79,9 +79,12 @@ Alertmanager, Grafana, CloudWatch ou Datadog envoient un webhook à un petit rel
 
 ## Rejouer la démo
 
+> [!NOTE]
+> Validé le 16/11/2026 sur **PIOPS-1** (post-mortem publié dans l'espace POC IA > Post-mortems). En démo, l'alerte est datée de 45 minutes avant le lancement et la chronologie est calculée à partir de cette heure : les dates restent cohérentes quel que soit le jour.
+
 1. **Actions > Brique 4 - Alerte vers incident > Run workflow**, scénario `memoire-saturee`, chronologie cochée : l'incident est créé avec la chronologie fictive de l'astreinte.
 2. Ouvrir l'incident dans Jira, montrer le contexte (dernier déploiement) et les commentaires.
-3. Passer l'incident à **Terminé**.
+3. Passer l'incident à **En investigation**, **Atténué** (service rétabli : fixe la durée d'impact), puis **Terminé**.
 4. Environ 1 à 2 minutes plus tard : commentaire avec le lien, et page **Post-mortem PIOPS-x** dans Confluence.
 
 *Pour rejouer le post-mortem seul :* Actions > Brique 4 - Post-mortem IA > Run workflow > clé de l'incident.
