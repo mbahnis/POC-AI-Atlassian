@@ -2,211 +2,201 @@
 
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
-> **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) validée le 16/11 (PR #15). Brique 4 (post-mortem) validée le 16/11 (PIOPS-1). Briques 3 et 4 à venir.
+> **Comment l'utiliser ?** Le déroulé se lit de haut en bas : pour chaque étape, **ce que tu fais**, **ce que tu dis**, **ce qui doit apparaître**. Les sections dépliables "🙋 Si le client demande..." ne servent que si la question arrive.
+> **Mis à jour le** 16/11/2026 : scénario de bout en bout répété (triage, revue de PR, livraison). Le post-mortem est en annexe.
+
+**L'histoire racontée :** une journée normale dans une équipe. Un ticket arrive, un développeur code, on livre. À chaque étape, l'IA enlève une corvée, sans jamais décider à la place de l'équipe.
 
 ---
 
-## ✅ Avant le rendez-vous (10 min)
+## ✅ Avant le rendez-vous
 
-- [ ] **Remettre la démo à zéro** : `python -m scripts.demo_reset --apply` (voir [mise en place](guides/mise-en-place.md#5-remettre-la-démo-à-zéro-en-local))
-- [ ] **Supprimer les tickets de test et celui de la démo précédente** (tous les tickets **sans** label `poc-demo` : PI-9, PI-11...). Sinon, ils apparaîtront comme doublons du ticket créé en direct
-- [ ] **Vérifier la priorité par défaut** du projet : elle doit être *Moyenne*, pas *Critique*
-- [ ] **Vérifier que le flux** `IA - Triage à la création` est **activé** (Jira > Paramètres de l'espace > Automatisation)
-- [ ] **Ouvrir ces onglets**, dans cet ordre :
-  1. Le tableau Jira du projet **POC-IA**
-  2. L'onglet **Actions** du dépôt GitHub (facultatif, pour montrer "la machine")
-  3. Ce guide
-- [ ] **Préparer le texte du ticket** à créer en direct (ci-dessous) dans un bloc-notes
-- [ ] **Lancer un triage de test** sur un ticket jetable pour "réveiller" la chaîne, puis le supprimer
+### Ce que Claude prépare (à lui demander : "remets le terrain à zéro pour une démo")
+
+- [ ] Un ticket **"Appliquer un code promo au panier"** neuf (Story, 5 critères d'acceptation, label `poc-demo`), noté ci-dessous **PI-X**
+- [ ] Une branche **`PI-X-code-promo`** poussée avec un **oubli volontaire** : les codes expirés ne sont pas refusés. Le ticket est donc déjà **En cours**
+- [ ] Aucune PR ouverte ; les tickets de répétition clôturés (sinon ils apparaissent comme doublons)
+
+### Ce que tu vérifies (5 min)
+
+- [ ] Les flux Jira **"IA - Triage à la création"**, **"Dev - Branche créée"** et **"Dev - PR fusionnée"** sont **activés** (projet POC-IA > Paramètres de l'espace > Automatisation)
+- [ ] Tu connais la **prochaine version** : regarde la dernière sur https://github.com/mbahnis/POC-AI-Atlassian/releases et ajoute 1 au chiffre du milieu (ex. après `v1.1.0` : `v1.2.0`)
+- [ ] Ces onglets sont ouverts, dans cet ordre :
+  1. Le **tableau Jira POC-IA** : https://one-atlas-bfqf-sandbox.atlassian.net/jira/software/projects/PI/boards
+  2. Le **ticket PI-X**
+  3. Les **pull requests GitHub** : https://github.com/mbahnis/POC-AI-Atlassian/pulls
+  4. L'**espace Confluence POC IA** : https://one-atlas-bfqf.atlassian.net/wiki/spaces/POCIA
+  5. Ce guide
 
 > [!TIP]
-> Si le réseau du client est capricieux, gardez une capture d'un commentaire de triage réussi (par exemple sur PI-2) en plan B.
+> **Plans B** si le réseau lâche : le triage de **PI-13**, la revue de la PR **#20** (PI-12), la page **Release notes v1.1.0** dans Confluence. Tout est déjà visible.
 
 ---
 
-## 🗺️ Déroulé
+## 🗺️ Déroulé (15 min)
 
 | # | Séquence | Durée | Message clé |
 |---|---|---|---|
 | 0 | Ouverture | 1 min | "On ne vous vend pas de l'IA, on vous rend du temps" |
-| 1 | Triage IA en direct | 4 min | "Un ticket flou devient exploitable en 30 secondes" |
-| 2 bis | Revue de PR contre le ticket | 3 min | "L'oubli est repéré avant la recette, et l'IA ne ment pas" |
-| 2 ter | Livraison tracée | 4 min | "Le code, le ticket et la doc restent alignés" |
-| 2 | Les garde-fous | 2 min | "L'IA propose, votre équipe décide" |
-| 2 quater | De l'alerte au post-mortem | 4 min | "Plus jamais de page blanche après un incident" |
-| 3 | Conclusion | 1 min | "On commence par la brique qui vous fait gagner le plus" |
+| 1 | Triage IA d'un ticket flou | 4 min | "Un ticket flou devient exploitable en 30 secondes" |
+| 2 | Revue IA de la PR contre le ticket | 5 min | "L'oubli est repéré avant la recette" |
+| 3 | Livraison tracée et notes de version | 4 min | "Le code, le ticket et la doc restent alignés, sans ressaisie" |
+| 4 | Conclusion et garde-fous | 1 min | "L'IA propose, votre équipe décide" |
 
 ---
 
 ## 0️⃣ Ouverture (1 min)
 
-**À dire :**
-> "Vos équipes passent du temps sur des tâches à faible valeur : trier des tickets mal rédigés, mettre à jour des statuts, écrire des release notes, rédiger des post-mortems. Je vais vous montrer comment l'IA peut s'en charger **dans les outils que vous utilisez déjà**, Jira et Confluence, et **sans jamais décider à votre place**."
+**Tu dis :**
+> "Vos équipes passent du temps sur des tâches à faible valeur : trier des tickets mal rédigés, vérifier que le code fait bien ce qui était demandé, mettre à jour des statuts, écrire des notes de version. Je vais vous montrer comment l'IA s'en charge **dans les outils que vous utilisez déjà**, Jira, Confluence et votre chaîne CI/CD, **sans jamais décider à votre place**."
 
-**À montrer :** le tableau Jira avec quelques tickets existants.
+**Tu montres :** le tableau Jira POC-IA.
 
 ---
 
-## 1️⃣ Triage IA en direct (4 min)
+## 1️⃣ Triage IA d'un ticket flou (4 min)
 
-### Étape 1.1 : créer un ticket mal rédigé
+**Le problème :** le ticket du lundi matin, "ça marche pas", sans détail. Le chef de projet perd un quart d'heure à rappeler l'auteur et à chercher si quelqu'un a déjà signalé la même chose.
 
-**À faire :** cliquer sur **Créer** et saisir, sans le corriger :
+### 1.1 Créer le ticket
+
+**Tu fais :** sur le tableau, **+ Créer**, puis :
 
 | Champ | Valeur |
 |---|---|
 | Type | Bug |
 | Résumé | `ça marche pas le paiement` |
 | Description | `les clients se plaignent ça plante quand ils valident le panier pour payer, page d'erreur. urgent !! voir avec sophie.martin@maison-lumen.example elle a eu le client au tel` |
+| Priorité | Medium |
 
-> [!WARNING]
-> **Ne pas ajouter le label `poc-demo`** : le flux ignore volontairement les tickets qui le portent.
+Pas d'étiquette. **Créer**.
 
-**À dire pendant la saisie :**
-> "Voilà le ticket typique qu'un chef de projet reçoit le lundi matin : pas d'étapes, pas d'environnement, un 'urgent' et un e-mail. Normalement, il faut rappeler l'auteur."
+**Tu dis pendant la saisie :**
+> "Voilà le ticket typique : pas d'étapes, pas d'environnement, un 'urgent' et un e-mail."
 
-### Étape 1.2 : laisser travailler (30 secondes)
+### 1.2 Laisser travailler (environ 30 s)
 
-**À faire (facultatif) :** basculer sur l'onglet **GitHub Actions** : un run "Brique 1 - Triage IA" démarre tout seul.
+**Tu dis :**
+> "Jira vient de prévenir notre chaîne d'automatisation. Avant d'envoyer quoi que ce soit à l'IA, on masque les données personnelles : l'e-mail de Sophie ne sort pas de chez vous. L'IA reçoit aussi les tickets ouverts, pour repérer les doublons."
 
-**À dire pendant l'attente :**
-> "Jira vient de prévenir notre chaîne d'automatisation. Avant d'envoyer quoi que ce soit à l'IA, on **masque les données personnelles** : l'e-mail de Sophie ne sortira pas de chez vous. L'IA reçoit aussi la liste des tickets ouverts, pour repérer les doublons."
+### 1.3 Lire le résultat
 
-### Étape 1.3 : montrer le résultat
+**Tu fais :** rafraîchis le ticket, descends lentement dans le commentaire.
 
-**À faire :** rafraîchir le ticket. Faire défiler le commentaire **lentement**, en s'arrêtant sur 4 points :
-
-| Point | Ce qu'on pointe | À dire |
-|---|---|---|
-| 🔵 Encadré bleu | "Proposition de triage IA, à valider" | "C'est une **proposition**. Rien n'a été modifié dans le ticket." |
-| 📝 Reformulation | Le nouveau titre | "Le titre devient compréhensible par toute l'équipe." |
-| 🟠 Priorité | Haute, avec sa justification | "L'IA ne s'est pas laissé influencer par le 'urgent' : elle justifie, et dit ce qui ferait passer en Critique." |
-| 🔁 Doublons | PI-2 en confiance **forte**, PI-1 en **moyenne** | "Elle a retrouvé PI-2, le même signalement fait la semaine dernière par quelqu'un d'autre. Et elle rapproche PI-1, un bug voisin mieux documenté, en disant qu'il faut **le confirmer**. Elle ne surinterprète pas." |
-| ❓ Questions | 3 à 5 questions | "Le chef de projet n'a plus qu'à copier ces questions à l'auteur." |
-| 🛡️ Bas du commentaire | "Données personnelles masquées" | "Et l'e-mail de Sophie n'apparaît nulle part." |
+| Ce qui apparaît | Tu dis |
+|---|---|
+| 🔵 "Proposition de triage IA, à valider" | "Aucun champ modifié : c'est une proposition." |
+| Titre reformulé | "Compréhensible par toute l'équipe sans ouvrir le ticket." |
+| 🟠 Priorité Haute, justifiée | "Elle raisonne sur l'impact, pas sur le 'urgent' de l'auteur, et dit ce qui la ferait passer en Critique." |
+| 🔁 PI-2 en confiance **forte** | "Quelqu'un avait déjà signalé la même chose. Sans elle, deux devs auraient pu travailler sur le même bug." |
+| Doublon voisin en confiance **faible** | "Elle nuance : sujet voisin, problème différent." |
+| ❓ Questions à l'auteur | "Le chef de projet n'a plus qu'à les copier." |
+| 🛡️ "Données personnelles masquées" | "L'e-mail de Sophie n'apparaît nulle part." |
 
 **Phrase de transition :**
-> "Votre chef de projet passe de 10 minutes de tri et d'allers-retours à 30 secondes de validation."
+> "10 minutes de tri deviennent 30 secondes de validation. Passons côté développeur."
 
 ---
 
-## 2️⃣ bis. Revue de PR contre le ticket (3 min)
+## 2️⃣ Revue IA de la PR contre le ticket (5 min)
 
-> [!TIP]
-> **Support prêt :** la PR **#15** (PI-3) est ouverte et son commentaire de revue reflète l'état final. L'onglet **Commits** et l'historique du commentaire ("edited") montrent l'évolution. Pour une démo en direct, préparer une nouvelle branche au nom d'un ticket avec un critère volontairement oublié.
+**Le problème :** le dev livre, les tests passent... mais il a oublié un critère du ticket. On le découvre en recette, une semaine plus tard.
 
-### Étape 2.1 : la PR oublie un critère
+### 2.1 Le ticket suit le code
 
-**À faire :** ouvrir le ticket **PI-3** (4 critères d'acceptation, dont "en français et en anglais"), puis la PR associée et son commentaire **🤖 Revue IA**.
+**Tu fais :** ouvre **PI-X**. Montre les 5 critères d'acceptation, puis le panneau **Développement** (branche `PI-X-code-promo`) et le statut **En cours**.
 
-**À dire :**
-> "Le développeur a livré les messages d'erreur. Tout a l'air bon, les tests passent. Mais le ticket demandait le français **et** l'anglais. L'IA a comparé le code à chaque critère : elle a vu que la version anglaise manque, et elle le dit avant même la revue humaine."
+**Tu dis :**
+> "Le dev a commencé à coder. Il n'a rien mis à jour dans Jira : la clé du ticket dans le nom de sa branche a suffi. C'est du natif Atlassian."
 
-**À pointer :**
+### 2.2 Ouvrir la PR
 
-| Point | À dire |
+**Tu fais :**
+1. Onglet **Pull requests** de GitHub, **New pull request** (ou **Compare & pull request** si le bandeau jaune s'affiche).
+2. base `main`, compare `PI-X-code-promo`.
+3. Titre : `PI-X codes promo au panier`. Description : `Implémente les codes promo au panier.`
+4. **Create pull request**.
+
+**Tu dis pendant l'attente (environ 1 min) :**
+> "Les tests passent, tout a l'air bon. Pendant ce temps, l'IA compare le code à chacun des 5 critères du ticket."
+
+### 2.3 L'IA trouve l'oubli
+
+**Tu fais :** rafraîchis la PR. Commentaire **🤖 Revue IA** : 4 critères ✅, et **❌ "Un code expiré est refusé"**.
+
+**Tu dis :**
+> "Le dev a oublié de vérifier la date d'expiration. Les tests passaient parce que ce cas n'était pas testé. Sans l'IA, on le découvrait en recette, ou un client utilisait un code périmé. Et le chef de projet est prévenu dans Jira."
+
+Montre le commentaire **"Points à compléter"** dans **PI-X**.
+
+### 2.4 Corriger en direct
+
+**Tu fais :**
+1. Dans la PR, onglet **Files changed**, fichier `app/promo.py`, **⋯** puis **Edit file**.
+2. Sous ces deux lignes :
+```python
+    if offre is None:
+        raise CodePromoRefuse("Code promo inconnu")
+```
+   colle (4 espaces avant `if`, 8 avant `raise`) :
+```python
+    if (aujourd_hui or date.today()) > offre["fin"]:
+        raise CodePromoRefuse("Ce code promo a expiré")
+```
+3. **Commit changes...**, message `PI-X refus des codes expirés`, **Commit directly to the PI-X-code-promo branch**, **Commit changes**.
+
+### 2.5 L'IA reconnaît la correction
+
+**Tu fais :** attends environ 1 min, rafraîchis la PR : le **même** commentaire passe ✅ **Conforme**. PI-X reçoit un nouveau commentaire.
+
+**Tu dis :**
+> "Même commentaire mis à jour : pas de bruit à chaque push. L'IA ne remplace pas la revue humaine : elle répond à une seule question, est-ce que le code fait ce que le ticket demande ?"
+
+---
+
+## 3️⃣ Livraison tracée et notes de version (4 min)
+
+**Le problème :** statuts Jira jamais à jour, et notes de version écrites à la main le vendredi soir, quand elles le sont.
+
+### 3.1 Fusionner : le ticket se ferme seul
+
+**Tu fais :** dans la PR, **Merge pull request**, **Confirm merge**. Reviens sur **PI-X** et rafraîchis : statut **Terminé**.
+
+**Tu dis :**
+> "Personne n'a touché au ticket : la fusion l'a fermé. Encore du natif."
+
+### 3.2 Publier la version
+
+**Tu fais :**
+1. https://github.com/mbahnis/POC-AI-Atlassian/releases/new
+2. **Tag: Select tag**, tape la prochaine version (ex. `v1.2.0`), puis **Create new tag ... on publish**. Target `main`.
+3. Titre : la version. **Publish release**.
+
+**Tu dis pendant l'attente (1 à 2 min) :**
+> "On déploie, puis l'IA lit tout ce qui a été fusionné depuis la dernière version, les tickets associés, et rédige les notes de version pour vos métiers, pas pour les développeurs."
+
+### 3.3 Montrer le résultat
+
+**Tu fais :** dans Confluence (espace POC IA > Release notes), ouvre **"Release notes v1.2.0"**. Puis reviens sur **PI-X**.
+
+| Ce qui apparaît | Tu dis |
 |---|---|
-| Le tableau des critères | "Chaque critère du ticket, avec la preuve dans le code." |
-| ❔ "Non vérifiable" | "Elle ne prétend pas vérifier ce que le code seul ne montre pas, comme l'affichage sans rechargement : c'est pour le testeur." |
-| Le commentaire dans PI-3 | "Le chef de projet est prévenu dans Jira, sans ouvrir GitHub." |
-
-### Étape 2.2 : la correction est reconnue, et l'IA reste honnête
-
-**À montrer :** le commentaire mis à jour : le critère bilingue est passé ✅ **couvert**, mais le verdict reste 🟠 car le **code front** (afficher le message, vider le formulaire) n'est pas dans la PR.
-
-**À dire :**
-> "Même commentaire, mis à jour : pas de bruit à chaque push. L'oubli de l'anglais est corrigé et reconnu. Et l'IA rappelle que la partie front reste à faire : c'est une information utile pour le chef de projet, pas un faux positif. Elle ne dit pas 'tout va bien' pour faire plaisir."
+| Le résumé en haut | "Lisible par le support et le produit." |
+| La nouveauté "codes promo" | "Classée et expliquée par son effet pour l'utilisateur." |
+| Les liens ticket et PR | "Chaque ligne est traçable ; l'IA ne peut citer que ce qui existe." |
+| Dans PI-X : version et commentaire "Livré" | "Le support sait dans quelle version c'est sorti." |
 
 ---
 
-## 2️⃣ ter. Livraison tracée (4 min)
+## 4️⃣ Conclusion et garde-fous (1 min)
 
-> [!IMPORTANT]
-> **À préparer avant le rendez-vous :** une branche au nom d'un ticket ouvert (ex. `PI-5-...`) avec une PR prête à être fusionnée, et le numéro de la prochaine version (la dernière publiée est `v1.1.0` : utiliser `v1.2.0`). Le guide de la brique 2 explique [comment rejouer la démo](guides/brique-2-release.md#rejouer-la-démo).
-
-> [!TIP]
-> Plan B si le réseau est lent : montrer la page **Release notes v1.1.0** déjà publiée dans l'espace Confluence **POC IA**, et les tickets PI-1 et PI-4 (version `v1.1.0`, commentaire "Livré").
-
-### Étape 2.3 : le ticket suit le code, tout seul
-
-**À faire :** ouvrir PI-1 dans Jira, montrer le panneau **Développement** (branche et PR liées), puis fusionner la PR sur GitHub et rafraîchir PI-1.
-
-**À dire :**
-> "Le développeur n'a rien mis à jour dans Jira. Il a juste mis la clé du ticket dans le nom de sa branche. Le ticket est passé En cours à la création de la branche, et Terminé à la fusion. Tout ça, c'est du **natif Atlassian** : votre licence le fait déjà, on l'a simplement branché."
-
-### Étape 2.4 : la release documente elle-même
-
-**À faire :** publier la release suivante (`v1.2.0`) sur GitHub (Releases > Draft a new release > Tag : saisir `v1.2.0` puis **Create new tag**), montrer le workflow qui se lance, puis ouvrir la page de notes de version dans l'espace Confluence **POC IA** et revenir sur le ticket.
-
-**À dire pendant l'attente (environ 1 min) :**
-> "On déploie. Pendant ce temps, l'IA lit les PR fusionnées depuis la dernière version et les tickets qu'elles citent, et elle rédige les notes de version pour vos métiers, pas pour les développeurs."
-
-**À pointer sur la page :**
-
-| Point | À dire |
-|---|---|
-| Le résumé en haut | "Lisible par le support et le produit, sans jargon." |
-| Les catégories (nouveautés, corrections, technique) | "Classées automatiquement." |
-| Les liens vers les tickets et PR | "Chaque ligne est traçable. L'IA ne peut citer que ce qui existe réellement." |
-| Dans le ticket : la version et le commentaire "Livré" | "Le support sait immédiatement dans quelle version le bug est corrigé." |
-
-**Phrase de transition :**
-> "Fini les statuts oubliés et les release notes écrites le vendredi soir : le code, le ticket et la documentation restent alignés."
-
----
-
-## 2️⃣ Les garde-fous (2 min)
-
-**À dire, en montrant le commentaire :**
-> "Trois règles non négociables :
-> 1. **L'IA propose, votre équipe décide.** Aucun champ modifié sans validation humaine.
-> 2. **Vos données sont protégées** : masquées avant l'envoi, et chaque appel est tracé dans un journal d'audit.
-> 3. **Vous n'êtes pas prisonniers** d'un fournisseur d'IA : on peut changer de modèle ou l'héberger chez votre cloud provider."
-
----
-
-## 2️⃣ quater. De l'alerte au post-mortem (4 min)
-
-> [!IMPORTANT]
-> **À préparer juste avant le rendez-vous :** lancer **Actions > Brique 4 - Alerte vers incident** (chronologie cochée). L'alerte est datée de 45 minutes avant le lancement, et la chronologie de l'astreinte est calée dessus. Passer ensuite l'incident à **En investigation** puis **Atténué** : la durée d'impact sera calculée sur ce passage.
-
-> [!TIP]
-> Plan B : le post-mortem de **PIOPS-1** est déjà publié dans Confluence (espace POC IA > Post-mortems).
-
-### Étape 4.1 : l'alerte devient un incident
-
-**À montrer :** l'incident dans le projet **POC IA - Exploitation** : "[Incident] Mémoire saturée sur api-commandes (98 %)".
-
-**À dire :**
-> "Cette nuit, la supervision a détecté une saturation mémoire. L'incident s'est créé tout seul, avec la gravité, le service touché, la procédure, et surtout le **dernier déploiement** : la version d'hier. C'est la première question que se pose l'astreinte. Ensuite, l'équipe a simplement commenté ce qu'elle faisait."
-
-### Étape 4.2 : l'incident est clos, le post-mortem s'écrit
-
-**À faire :** passer l'incident à **Terminé**, attendre 1 à 2 minutes, rafraîchir l'incident puis ouvrir le lien vers Confluence.
-
-**À dire pendant l'attente :**
-> "D'habitude, à ce moment-là, quelqu'un se promet d'écrire le post-mortem... et ne le fait jamais. Ici, l'IA relit l'incident, les commentaires et l'historique, et prépare le brouillon."
-
-**À pointer sur la page :**
-
-| Point | À dire |
-|---|---|
-| Le statut "BROUILLON À RELIRE" | "C'est un brouillon : l'équipe relit et corrige en 10 minutes au lieu de partir de zéro." |
-| Les durées d'impact et totale | "Calculées par le code : du début de l'alerte jusqu'au service rétabli, puis jusqu'à la clôture. Pas estimées par l'IA." |
-| La cause probable et sa confiance | "Une hypothèse, avec les faits qui l'appuient. L'équipe confirme en revue." |
-| Aucun nom de personne | "Les commentaires citaient des prénoms : le post-mortem n'en contient aucun. Des rôles, pas des personnes." |
-| Les actions proposées | "Proposées, pas créées : l'équipe choisit lesquelles devenir des tickets." |
-
----
-
-## 3️⃣ Conclusion (1 min)
-
-**À dire :**
-> "Ce que vous avez vu est la première de quatre briques indépendantes : le triage, la livraison tracée avec release notes automatiques, la revue de code contre le ticket, et le post-mortem automatique après incident. **On commence par celle qui vous fait gagner le plus de temps.** Laquelle vous parle le plus ?"
-
-> [!TIP]
-> Terminer par une **question ouverte** : elle lance la discussion sur leur contexte, bien plus utile qu'une démo plus longue.
+**Tu dis :**
+> "Trois règles tout au long de ce que vous avez vu :
+> 1. **L'IA propose, votre équipe décide.** Aucun champ modifié, aucune fusion bloquée.
+> 2. **Vos données sont protégées** : masquées avant l'envoi, chaque appel est tracé.
+> 3. **Vous n'êtes pas prisonniers** : on change de modèle, de cloud ou d'outil de CI sans tout refaire.
+>
+> Chaque brique est indépendante. **On commence par celle qui vous fait gagner le plus de temps.** Laquelle vous parle ?"
 
 ---
 
@@ -352,7 +342,43 @@
 
 ---
 
+## ➕ Annexe : de l'alerte au post-mortem (4 min, hors démo standard)
+
+> [!IMPORTANT]
+> **À préparer juste avant le rendez-vous :** lancer **Actions > Brique 4 - Alerte vers incident** (chronologie cochée). L'alerte est datée de 45 minutes avant le lancement, et la chronologie de l'astreinte est calée dessus. Passer ensuite l'incident à **En investigation** puis **Atténué** : la durée d'impact sera calculée sur ce passage.
+
+> [!TIP]
+> Plan B : le post-mortem de **PIOPS-1** est déjà publié dans Confluence (espace POC IA > Post-mortems).
+
+### Étape 4.1 : l'alerte devient un incident
+
+**À montrer :** l'incident dans le projet **POC IA - Exploitation** : "[Incident] Mémoire saturée sur api-commandes (98 %)".
+
+**À dire :**
+> "Cette nuit, la supervision a détecté une saturation mémoire. L'incident s'est créé tout seul, avec la gravité, le service touché, la procédure, et surtout le **dernier déploiement** : la version d'hier. C'est la première question que se pose l'astreinte. Ensuite, l'équipe a simplement commenté ce qu'elle faisait."
+
+### Étape 4.2 : l'incident est clos, le post-mortem s'écrit
+
+**À faire :** passer l'incident à **Terminé**, attendre 1 à 2 minutes, rafraîchir l'incident puis ouvrir le lien vers Confluence.
+
+**À dire pendant l'attente :**
+> "D'habitude, à ce moment-là, quelqu'un se promet d'écrire le post-mortem... et ne le fait jamais. Ici, l'IA relit l'incident, les commentaires et l'historique, et prépare le brouillon."
+
+**À pointer sur la page :**
+
+| Point | À dire |
+|---|---|
+| Le statut "BROUILLON À RELIRE" | "C'est un brouillon : l'équipe relit et corrige en 10 minutes au lieu de partir de zéro." |
+| Les durées d'impact et totale | "Calculées par le code : du début de l'alerte jusqu'au service rétabli, puis jusqu'à la clôture. Pas estimées par l'IA." |
+| La cause probable et sa confiance | "Une hypothèse, avec les faits qui l'appuient. L'équipe confirme en revue." |
+| Aucun nom de personne | "Les commentaires citaient des prénoms : le post-mortem n'en contient aucun. Des rôles, pas des personnes." |
+| Les actions proposées | "Proposées, pas créées : l'équipe choisit lesquelles devenir des tickets." |
+
+---
+
+---
+
 ## 🧹 Après le rendez-vous
 
-- [ ] Supprimer le ticket créé en direct (ou relancer `demo_reset`)
+- [ ] Demander à Claude de **remettre le terrain à zéro** (clôture des tickets de la démo, nouveau ticket PI-X et nouvelle branche)
 - [ ] Noter les questions posées qui ne sont pas dans ce guide, pour l'enrichir
