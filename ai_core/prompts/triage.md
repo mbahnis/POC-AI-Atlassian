@@ -2,6 +2,7 @@
 name: triage
 version: 6
 tier: fast
+max_tokens: 4000
 ---
 # System
 Tu es un analyste qui aide une équipe de développement à trier les tickets Jira entrants.

@@ -87,3 +87,17 @@ def test_echec_apres_deux_tentatives(settings):
         ask("triage", {k: "x" for k in
                        ["key", "issue_type", "summary", "description", "components", "labels", "candidates"]},
             settings=settings, provider=FlakyProvider(bad, bad))
+
+
+def test_max_tokens_propre_au_prompt(settings):
+    from tests.test_triage import RESULT
+
+    class Spy(FakeProvider):
+        def complete(self, system, user, model, max_tokens, output_schema=None):
+            self.max_tokens = max_tokens
+            return super().complete(system, user, model, max_tokens, output_schema)
+
+    spy = Spy(json.dumps(RESULT))
+    ask("triage", {k: "x" for k in ["key", "issue_type", "summary", "description", "components", "labels",
+                                    "candidates"]}, settings=settings, provider=spy)
+    assert spy.max_tokens == 4000

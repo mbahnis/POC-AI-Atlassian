@@ -27,6 +27,8 @@ class Prompt:
     user_template: str
     # Schéma JSON de la réponse attendue (fichier <nom>.schema.json à côté du prompt), optionnel
     output_schema: dict | None = None
+    # Longueur maximale de la réponse propre à ce prompt (sinon, réglage global AI_MAX_TOKENS)
+    max_tokens: int | None = None
 
     def render(self, variables: dict) -> str:
         # substitute (et non safe_substitute) : une variable oubliée doit faire échouer
@@ -46,6 +48,7 @@ def load_prompt(name: str, prompts_dir: Path = PROMPTS_DIR) -> Prompt:
         name=meta["name"],
         version=str(meta["version"]),
         tier=meta.get("tier", "fast"),
+        max_tokens=meta.get("max_tokens"),
         system=system,
         user_template=user_part.strip(),
     )

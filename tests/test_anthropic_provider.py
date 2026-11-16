@@ -45,7 +45,7 @@ def test_reponse_tronquee_signalee(monkeypatch):
     import pytest
 
     provider = make_provider(monkeypatch, FakeMessages('{"priorite": "Hau', stop_reason="max_tokens"))
-    with pytest.raises(RuntimeError, match="tronquée"):
+    with pytest.raises(RuntimeError, match="tronquée.*Hau"):
         provider.complete("s", "u", "m", 10, output_schema={"type": "object"})
 
 
