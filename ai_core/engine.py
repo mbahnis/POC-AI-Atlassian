@@ -43,7 +43,8 @@ def ask(
         # Une réponse structurée est contrôlée ; si elle est corrompue, on relance une fois.
         for attempts in (1, 2):
             response = provider.complete(
-                prompt.system, user_text, model, settings.max_tokens, output_schema=prompt.output_schema
+                prompt.system, user_text, model, prompt.max_tokens or settings.max_tokens,
+                output_schema=prompt.output_schema,
             )
             if prompt.output_schema is None or response.data is None:
                 break

@@ -45,7 +45,11 @@ class AnthropicProvider:
         data = None
         if output_schema:
             if msg.stop_reason == "max_tokens":
-                raise RuntimeError("Réponse tronquée (max_tokens atteint) : augmenter AI_MAX_TOKENS")
+                # On montre la fin de la réponse (déjà masquée) pour comprendre ce qui a débordé
+                raise RuntimeError(
+                    f"Réponse tronquée après {msg.usage.output_tokens} tokens (max_tokens={max_tokens}). "
+                    f"Fin de la réponse : ...{text[-300:]!r}"
+                )
             data = json.loads(text)
 
         return AIResponse(
