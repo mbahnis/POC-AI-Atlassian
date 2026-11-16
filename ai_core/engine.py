@@ -5,7 +5,8 @@ passent par ask(). C'est ici que s'appliquent, toujours dans le même ordre :
   1. chargement du prompt versionné
   2. masquage des données sensibles
   3. appel au fournisseur configuré
-  4. écriture du journal d'audit
+  4. contrôle de la réponse structurée (une relance si elle est corrompue)
+  5. écriture du journal d'audit
 """
 
 import json
@@ -16,6 +17,7 @@ from .config import Settings
 from .masking import mask
 from .prompts import load_prompt
 from .providers import AIProvider, AIResponse, get_provider
+from .validation import find_problems
 
 
 def ask(
@@ -36,10 +38,19 @@ def ask(
     if settings.masking_enabled:
         user_text, masked_counts = mask(user_text)
 
+    attempts, problems = 0, []
     with Timer() as t:
-        response = provider.complete(
-            prompt.system, user_text, model, settings.max_tokens, output_schema=prompt.output_schema
-        )
+        # Une réponse structurée est contrôlée ; si elle est corrompue, on relance une fois.
+        for attempts in (1, 2):
+            response = provider.complete(
+                prompt.system, user_text, model, settings.max_tokens, output_schema=prompt.output_schema
+            )
+            if prompt.output_schema is None or response.data is None:
+                break
+            problems = find_problems(response.data, prompt.output_schema)
+            if not problems:
+                break
+            print(f"::warning::Réponse IA rejetée (tentative {attempts}) : {'; '.join(problems)}")
 
     write_record(
         settings.audit_log_path,
@@ -55,8 +66,12 @@ def ask(
             "latency_ms": t.ms,
             "masked": masked_counts,
             "structured": prompt.output_schema is not None,
+            "attempts": attempts,
+            "rejected": problems,
         },
     )
+    if problems:
+        raise ValueError(f"Réponse IA invalide après {attempts} tentatives : {'; '.join(problems)}")
     return response
 
 

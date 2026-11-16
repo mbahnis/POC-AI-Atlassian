@@ -25,3 +25,15 @@ Le schéma sert aussi de documentation : les listes fermées (priorités, niveau
 - Plus d'erreur de format sur les briques qui utilisent un schéma.
 - La plupart des grands fournisseurs proposent un mécanisme équivalent (function calling, structured outputs) : le principe reste transposable si l'on change de fournisseur.
 - La lecture "texte" (`extract_json`) est conservée en secours pour un fournisseur qui n'aurait pas ce mécanisme.
+
+## Mise à jour du 16/11/2026 : mode strict et contrôle des réponses
+
+Un test réel sur PI-2 a montré que le *tool use* simple ne suffit pas : le modèle a produit un objet dont un champ texte contenait du balisage d'appel d'outil (`</justification_priorite><parameter name="composant">Paiement`). Le champ "composant" s'est retrouvé avalé dans la justification, et le commentaire Jira affichait ce balisage.
+
+Trois protections ont été ajoutées, du plus en amont au plus en aval :
+
+1. **Mode strict de l'API** (`strict: true` sur l'outil) : la génération est contrainte par le schéma. Le schéma est adapté automatiquement (objets fermés, contraintes non prises en charge retirées) par `ai_core/validation.py`.
+2. **Contrôle de chaque réponse** dans le moteur : conformité au schéma et détection de balisage parasite. Une réponse rejetée est relancée une fois ; un second échec arrête le traitement plutôt que de publier un commentaire faux. Le nombre de tentatives et les rejets sont écrits dans le journal d'audit.
+3. **Règles métier appliquées par le code** (`normalize` dans le script de triage) : composant et labels hors référentiel retirés, nombre de questions plafonné, note bornée. Le code a le dernier mot sur ce que l'IA a le droit d'écrire.
+
+Message pour les clients : on ne fait pas confiance aveuglément à la sortie d'un modèle, même structurée. On la contrôle comme n'importe quelle donnée entrante.

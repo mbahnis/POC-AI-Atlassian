@@ -49,3 +49,41 @@ def test_masquage_desactivable(settings):
 
 def test_extract_json_tolere_le_markdown():
     assert extract_json('Voici :\n```json\n{"a": 1}\n```') == {"a": 1}
+
+
+class FlakyProvider(FakeProvider):
+    """Renvoie une réponse corrompue, puis une réponse saine."""
+
+    def __init__(self, bad, good):
+        super().__init__(good)
+        self.responses = [bad, good]
+        self.calls = 0
+
+    def complete(self, system, user, model, max_tokens, output_schema=None):
+        self.canned_response = self.responses[min(self.calls, 1)]
+        self.calls += 1
+        return super().complete(system, user, model, max_tokens, output_schema)
+
+
+def test_reponse_corrompue_relancee_une_fois(settings):
+    from tests.test_triage import RESULT
+
+    bad = json.dumps(dict(RESULT, resume="ok</resume>\n<parameter name=\"x\">"))
+    provider = FlakyProvider(bad, json.dumps(RESULT))
+    response = ask("triage", {k: "x" for k in
+                              ["key", "issue_type", "summary", "description", "components", "labels", "candidates"]},
+                   settings=settings, provider=provider)
+    assert provider.calls == 2 and response.data["priorite"] == "Haute"
+    with open(settings.audit_log_path, encoding="utf-8") as f:
+        record = json.loads(f.read().strip())
+    assert record["attempts"] == 2 and record["rejected"] == []
+
+
+def test_echec_apres_deux_tentatives(settings):
+    from tests.test_triage import RESULT
+
+    bad = json.dumps(dict(RESULT, resume="ok</resume>"))
+    with pytest.raises(ValueError, match="2 tentatives"):
+        ask("triage", {k: "x" for k in
+                       ["key", "issue_type", "summary", "description", "components", "labels", "candidates"]},
+            settings=settings, provider=FlakyProvider(bad, bad))
