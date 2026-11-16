@@ -29,6 +29,8 @@ class Prompt:
     output_schema: dict | None = None
     # Longueur maximale de la réponse propre à ce prompt (sinon, réglage global AI_MAX_TOKENS)
     max_tokens: int | None = None
+    # Température propre à ce prompt (0 = plus déterministe), sinon valeur par défaut du fournisseur
+    temperature: float | None = None
 
     def render(self, variables: dict) -> str:
         # substitute (et non safe_substitute) : une variable oubliée doit faire échouer
@@ -49,6 +51,7 @@ def load_prompt(name: str, prompts_dir: Path = PROMPTS_DIR) -> Prompt:
         version=str(meta["version"]),
         tier=meta.get("tier", "fast"),
         max_tokens=meta.get("max_tokens"),
+        temperature=meta.get("temperature"),
         system=system,
         user_template=user_part.strip(),
     )

@@ -27,3 +27,17 @@ Les outils de revue de code par IA se multiplient (y compris côté GitHub et At
 
 - La qualité dépend de la qualité des critères d'acceptation : un ticket flou donne une revue floue. La brique 1 (triage) aide justement à obtenir des critères clairs : les briques se renforcent.
 - Les diffs très longs sont tronqués (limite réglable) et la revue le signale.
+
+## Mise à jour du 16/11/2026 : verdict calculé par le code, température 0
+
+Premier essai réel sur la PR #15 (PI-3) : la revue a bien repéré l'oubli de l'anglais, mais deux faiblesses sont apparues.
+
+1. **Instabilité** : le même critère d'interface ("affiché sous le formulaire sans recharger la page") a été classé "non vérifiable" au premier passage, puis "absent" au second, sans que le code d'interface ait changé.
+2. **Verdict choisi par l'IA** : il dépendait de son interprétation, pas d'une règle connue.
+
+Corrections :
+- **le verdict est calculé par le code** à partir des statuts : conforme si tous les critères vérifiables sont couverts ; non conforme si au moins la moitié des critères vérifiables sont absents ; partiel sinon. Les critères non vérifiables ne pénalisent pas la PR ;
+- **température 0** pour ce prompt (réglable par prompt dans son en-tête), pour des réponses plus stables d'une exécution à l'autre ;
+- **règle explicite** : sans fichier d'interface dans le diff, les critères d'affichage sont "non vérifiables" ; un critère est "couvert" dès que la logique est implémentée et exposée.
+
+Leçon : tout ce qui sert à décider (un verdict, un seuil) doit être une règle du code, lisible et testée. L'IA fournit l'analyse détaillée, le code tranche.
