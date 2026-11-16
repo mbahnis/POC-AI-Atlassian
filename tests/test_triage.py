@@ -38,7 +38,9 @@ class FakeJira:
         }}
 
     def search(self, jql, fields=None, max_results=100):
-        return [{"key": "PI-1", "fields": {"summary": "Erreur 500 au paiement"}},
+        return [{"key": "PI-1", "fields": {"summary": "Erreur 500 au paiement", "description": {
+                    "type": "doc", "content": [{"type": "paragraph", "content": [
+                        {"type": "text", "text": "Page d'erreur 500 à la validation du panier"}]}]}}},
                 {"key": "PI-2", "fields": {"summary": "ça marche pas le paiement"}}]
 
     def add_comment(self, key, body):
@@ -126,3 +128,8 @@ def test_resume_apres_triage(monkeypatch, tmp_path):
     run_triage(monkeypatch, tmp_path, FakeJira())
     texte = summary.read_text(encoding="utf-8")
     assert "Triage publié sur PI-2" in texte and "PI-1 (forte)" in texte
+
+
+def test_extrait_de_description_des_candidats(monkeypatch, tmp_path):
+    _, provider = run_triage(monkeypatch, tmp_path, FakeJira(), dry_run=True)
+    assert "Extrait : Page d'erreur 500 à la validation du panier" in provider.last_user

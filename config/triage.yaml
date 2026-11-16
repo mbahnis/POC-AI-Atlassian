@@ -23,3 +23,6 @@ triaged_label: ia-triage
 
 # Nombre maximum de tickets ouverts envoyés à l'IA pour chercher les doublons
 max_candidates: 50
+
+# Longueur de l'extrait de description envoyé pour chaque ticket candidat (comparaison des symptômes)
+candidate_excerpt_chars: 200

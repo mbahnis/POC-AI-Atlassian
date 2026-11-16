@@ -56,13 +56,15 @@ def normalize(result: dict, config: dict) -> dict:
     return result
 
 
-def format_candidates(issues: list[dict], exclude_key: str, limit: int) -> str:
-    lines = [
-        f"- {i['key']} : {i['fields']['summary']}"
-        for i in issues
-        if i["key"] != exclude_key
-    ][:limit]
-    return "\n".join(lines) or "(aucun)"
+def format_candidates(issues: list[dict], exclude_key: str, limit: int, excerpt_chars: int = 200) -> str:
+    """Liste des tickets ouverts : titre + début de la description, pour comparer les symptômes."""
+    lines = []
+    for i in issues:
+        if i["key"] == exclude_key:
+            continue
+        excerpt = " ".join(adf_to_text(i["fields"].get("description")).split())[:excerpt_chars]
+        lines.append(f"- {i['key']} : {i['fields']['summary']}" + (f"\n  Extrait : {excerpt}" if excerpt else ""))
+    return "\n".join(lines[:limit]) or "(aucun)"
 
 
 def build_comment(result: dict, model: str) -> dict:
@@ -131,6 +133,7 @@ def triage(key: str, dry_run: bool = False, force: bool = False, jira: JiraClien
     project = fields["project"]["key"]
     candidates = jira.search(
         f"project = {project} AND statusCategory != Done ORDER BY created DESC",
+        fields=["summary", "description"],
         max_results=config["max_candidates"] + 1,
     )
 
@@ -143,7 +146,9 @@ def triage(key: str, dry_run: bool = False, force: bool = False, jira: JiraClien
             "description": adf_to_text(fields.get("description")) or "(vide)",
             "components": ", ".join(config["components"]),
             "labels": ", ".join(config["labels"]),
-            "candidates": format_candidates(candidates, key, config["max_candidates"]),
+            "candidates": format_candidates(
+                candidates, key, config["max_candidates"], config.get("candidate_excerpt_chars", 200)
+            ),
         },
         caller=f"triage:{key}",
     )
