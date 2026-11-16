@@ -53,3 +53,15 @@ def test_texte_simple_sans_schema(monkeypatch):
     provider = make_provider(monkeypatch, FakeMessages("bonjour"))
     response = provider.complete("s", "u", "m", 10)
     assert response.text == "bonjour" and response.data is None
+
+
+def test_arguments_acceptes_par_le_vrai_sdk():
+    """Vérifie les arguments envoyés contre la signature réelle du SDK installé (bug du 16/11 : temperature)."""
+    import inspect
+
+    accepted = set(inspect.signature(anthropic.Anthropic(api_key="x").messages.create).parameters)
+    fake = FakeMessages('{"a": "b"}')
+    provider = AnthropicProvider.__new__(AnthropicProvider)
+    provider._client = SimpleNamespace(messages=fake)
+    provider.complete("s", "u", "m", 10, output_schema={"type": "object", "properties": {"a": {"type": "string"}}})
+    assert set(fake.kwargs) <= accepted, set(fake.kwargs) - accepted

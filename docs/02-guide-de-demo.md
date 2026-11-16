@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
 > **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) scénarisée, **à répéter avant tout usage client**. Briques 3 et 4 à venir.
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) validée le 16/11 (PR #15). Briques 3 et 4 à venir.
 
 ---
 
@@ -31,7 +31,7 @@
 |---|---|---|---|
 | 0 | Ouverture | 1 min | "On ne vous vend pas de l'IA, on vous rend du temps" |
 | 1 | Triage IA en direct | 4 min | "Un ticket flou devient exploitable en 30 secondes" |
-| 2 bis | Revue de PR contre le ticket | 3 min | "L'oubli est repéré avant la recette" |
+| 2 bis | Revue de PR contre le ticket | 3 min | "L'oubli est repéré avant la recette, et l'IA ne ment pas" |
 | 2 ter | Livraison tracée | 4 min | "Le code, le ticket et la doc restent alignés" |
 | 2 | Les garde-fous | 2 min | "L'IA propose, votre équipe décide" |
 | 3 | Conclusion | 1 min | "On commence par la brique qui vous fait gagner le plus" |
@@ -92,8 +92,8 @@
 
 ## 2️⃣ bis. Revue de PR contre le ticket (3 min)
 
-> [!WARNING]
-> Séquence à jouer après une répétition (voir le [guide de la brique 3](guides/brique-3-revue-pr.md#rejouer-la-démo)). Préparer à l'avance une PR ouverte dont la revue est déjà faite, plus un commit correctif prêt à pousser.
+> [!TIP]
+> **Support prêt :** la PR **#15** (PI-3) est ouverte et son commentaire de revue reflète l'état final. L'onglet **Commits** et l'historique du commentaire ("edited") montrent l'évolution. Pour une démo en direct, préparer une nouvelle branche au nom d'un ticket avec un critère volontairement oublié.
 
 ### Étape 2.1 : la PR oublie un critère
 
@@ -110,12 +110,12 @@
 | ❔ "Non vérifiable" | "Elle ne prétend pas vérifier ce que le code seul ne montre pas, comme l'affichage sans rechargement : c'est pour le testeur." |
 | Le commentaire dans PI-3 | "Le chef de projet est prévenu dans Jira, sans ouvrir GitHub." |
 
-### Étape 2.2 : la correction est reconnue
+### Étape 2.2 : la correction est reconnue, et l'IA reste honnête
 
-**À faire :** pousser le commit correctif (ajout de l'anglais), attendre environ une minute, rafraîchir la PR.
+**À montrer :** le commentaire mis à jour : le critère bilingue est passé ✅ **couvert**, mais le verdict reste 🟠 car le **code front** (afficher le message, vider le formulaire) n'est pas dans la PR.
 
 **À dire :**
-> "Même commentaire, mis à jour : plus de bruit à chaque push. Et comme le verdict est passé au vert, le ticket est informé."
+> "Même commentaire, mis à jour : pas de bruit à chaque push. L'oubli de l'anglais est corrigé et reconnu. Et l'IA rappelle que la partie front reste à faire : c'est une information utile pour le chef de projet, pas un faux positif. Elle ne dit pas 'tout va bien' pour faire plaisir."
 
 ---
 

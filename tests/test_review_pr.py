@@ -35,9 +35,6 @@ def test_verdict_calcule_par_le_code():
     assert rp.compute_verdict(crit("non_verifiable")) == "conforme"
 
 
-def test_temperature_zero_pour_la_revue():
-    assert load_prompt("pr_review").temperature == 0
-
 
 def test_diff_filtre_et_tronque():
     files = [{"filename": "app/messages.py", "status": "added", "patch": "+x" * 10},
