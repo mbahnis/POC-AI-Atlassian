@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
-> **Mis à jour le** 16/11/2026, après la brique 1 (triage IA).
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) validée, brique 2 (livraison tracée) construite et en cours de validation.
 
 ---
 
@@ -17,8 +17,8 @@ Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
 | Irritant | Conséquence | Brique qui y répond |
 |---|---|---|
 | Tickets flous, incomplets, en doublon | Allers-retours, tri manuel, bugs traités deux fois | 🧠 **1. Triage IA** ✅ |
-| Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 2. Jira + CI/CD (à venir) |
-| Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 2. Jira + CI/CD (à venir) |
+| Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** 🔄 |
+| Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** 🔄 |
 | Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 3. Revue IA des PR (à venir) |
 | Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 4. Incident vers post-mortem (à venir) |
 
@@ -43,6 +43,18 @@ Questions       5 questions précises à poser à l'auteur
 
 > [!IMPORTANT]
 > L'IA **ne modifie aucun champ** du ticket. Elle propose dans un commentaire, l'équipe décide. Seul un label technique `ia-triage` est ajouté pour ne pas trier deux fois.
+
+### 🚀 Brique 2 : la livraison tracée (en cours de validation)
+
+**Ce que voit l'équipe :**
+- un développeur nomme sa branche `PI-1-...` : le ticket passe **En cours** et affiche la branche, puis la PR ;
+- la PR est fusionnée : le ticket passe **Terminé** ;
+- on publie une version `v1.1.0` : le déploiement apparaît dans le ticket, une **page de notes de version** rédigée par l'IA est publiée (Confluence, ou la GitHub Release à défaut), la **version Jira** est créée et chaque ticket livré reçoit un commentaire "Livré dans v1.1.0".
+
+**Ce que ça change :** plus de statuts oubliés, plus de release notes écrites à la main en fin de mois.
+
+> [!NOTE]
+> Les statuts et l'affichage des branches, PR et déploiements sont **100 % natifs** (application GitHub for Jira + flux Automation). Le code ne fait que ce que le natif ne sait pas faire : rédiger les notes et tenir les versions Jira à jour.
 
 ## 4. Comment ça marche
 
@@ -126,6 +138,18 @@ Le POC utilise mon compte Atlassian. Chez un client, on crée un compte de servi
 </details>
 
 <details>
+<summary><b>Pourquoi les notes de version ne sont-elles pas forcément dans Confluence ?</b></summary>
+
+Elles le sont dès que Confluence est configuré. Sinon, elles sont publiées dans la GitHub Release : c'est la preuve que la brique ne dépend pas de l'outil de documentation du client (Confluence, wiki GitLab, SharePoint...).
+</details>
+
+<details>
+<summary><b>Comment l'IA sait-elle quels tickets sont livrés ?</b></summary>
+
+Grâce à la clé du ticket (`PI-1`) dans le nom de branche ou le titre de la PR, la même convention que celle utilisée par GitHub for Jira. Le script liste les PR fusionnées depuis la version précédente et lit les tickets cités. L'IA ne peut citer que ces tickets et PR : toute référence inventée est retirée par le code.
+</details>
+
+<details>
 <summary><b>Combien de temps pour l'installer chez un client ?</b></summary>
 
 Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter le référentiel de composants et labels, brancher le flux), puis quelques jours d'observation pour ajuster le prompt à leurs tickets.
@@ -140,6 +164,7 @@ Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter l
 | **1 bis. Fiabilisation** | Format de réponse imposé par l'API, contrôle et relance, règles métier dans le code | Les premiers essais réels ont révélé des réponses mal formées |
 | **1 ter. Automatisation** | Flux Jira Automation qui déclenche le triage à la création | Zéro action manuelle : c'est ce qui fait l'effet en démo |
 | **1 quater. Doublons** | Les tickets candidats sont envoyés avec un extrait de leur description | L'IA ne voyait que les titres et ne pouvait pas confirmer un doublon évident |
+| **2. Livraison** | Statuts en natif, workflow de release, notes de version IA, versions Jira | Montrer le lien entre le code, le déploiement et la documentation sans ressaisie |
 
 Chaque choix important est expliqué dans une [fiche de décision](decisions/README.md).
 
@@ -148,7 +173,7 @@ Chaque choix important est expliqué dans une [fiche de décision](decisions/REA
 | Je veux... | Aller voir |
 |---|---|
 | Préparer et faire la démo | [Guide de démo](02-guide-de-demo.md) |
-| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md) puis [brique 1](guides/brique-1-triage.md) |
+| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md), puis [brique 1](guides/brique-1-triage.md) et [brique 2](guides/brique-2-release.md) |
 | Comprendre l'architecture et l'adapter à un client | [Architecture](architecture.md) |
 | Savoir pourquoi un choix a été fait | [Décisions](decisions/README.md) |
 | Modifier le comportement du triage | `ai_core/prompts/triage.md` et `config/triage.yaml` |
