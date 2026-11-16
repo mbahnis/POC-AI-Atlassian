@@ -120,12 +120,27 @@ def jira_comment(review: dict, pr: dict) -> dict:
     return adf.doc(*blocks)
 
 
+def compute_verdict(criteres: list[dict]) -> str:
+    """Verdict calculé par le code à partir des statuts (et non choisi par l'IA) : stable et explicable.
+
+    - conforme : tous les critères vérifiables sont couverts (les "non vérifiables" ne comptent pas contre la PR)
+    - non_conforme : au moins la moitié des critères vérifiables sont absents
+    - partiel : les autres cas
+    """
+    verifiables = [c for c in criteres if c["statut"] != "non_verifiable"]
+    if all(c["statut"] == "couvert" for c in verifiables):
+        return "conforme"
+    absents = sum(1 for c in verifiables if c["statut"] == "absent")
+    return "non_conforme" if absents * 2 >= len(verifiables) else "partiel"
+
+
 def normalize(review: dict, tickets: dict[str, dict]) -> dict:
-    """Le code a le dernier mot : un critère rattaché à un ticket inconnu est rattaché au premier ticket."""
+    """Le code a le dernier mot : tickets inconnus rattachés au premier ticket, verdict recalculé."""
     first = next(iter(tickets))
     for c in review["criteres"]:
         if c["ticket"] not in tickets:
             c["ticket"] = first
+    review["verdict"] = compute_verdict(review["criteres"])
     return review
 
 

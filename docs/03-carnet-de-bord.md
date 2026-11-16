@@ -254,7 +254,19 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 
 **Scénario de démo préparé :** la branche `PI-3-message-erreur-paiement` ajoute `app/messages.py` (messages lisibles, code bancaire masqué, action "Réessayer") **uniquement en français**, alors que PI-3 exige français et anglais. Attendu : critère bilingue partiel ou absent, puis vert après un commit correctif.
 
-**État :** code et tests prêts (49 tests). Reste à valider sur la PR de démo.
+**Premier essai réel (PR #15, 16/11) :**
+
+| Push | Résultat |
+|---|---|
+| Version française seule | 🟠 Partiel. Critère bilingue ❌ **absent** (avec en plus la remarque que le paramètre `langue` est ignoré), code bancaire ✅ couvert, "Réessayer" 🟠 partiel, affichage ❔ non vérifiable. Commentaire "Points à compléter" posté sur PI-3 |
+| Ajout de l'anglais | Le **même** commentaire est mis à jour. Critère bilingue 🟠 partiel (fonction de langue présente mais pas branchée sur la requête). Mais le critère d'affichage passe de "non vérifiable" à "absent" sans raison |
+
+**Problèmes et corrections :**
+- **Mon scénario était mal conçu** : PI-3 contient des critères d'interface alors que l'appli fictive n'a pas d'interface. Ils ne pouvaient jamais être "couverts", donc la démo ne pouvait pas passer au vert.
+- **Instabilité de l'IA** entre deux exécutions sur le même critère.
+- Corrections ([décision 0010, mise à jour](decisions/0010-revue-pr-contre-ticket.md)) : verdict **calculé par le code** à partir des statuts, **température 0**, règle explicite pour les critères d'interface. Le scénario est complété par un dernier commit qui expose les messages via une fonction d'API utilisant la langue du navigateur.
+
+**Leçon :** l'IA analyse, le code tranche. Et un scénario de démo doit être conçu pour pouvoir réussir honnêtement.
 
 ---
 
@@ -284,6 +296,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | **Environnement GitHub** | Un nom de cible de déploiement (`production`), sur lequel on peut mettre des règles (validation manuelle) | Job `deploy` de la brique 2 |
 | **GitHub for Jira** | Application officielle Atlassian qui affiche branches, PR et déploiements GitHub dans les tickets | Partie native de la brique 2 |
 | **Diff** | La liste des lignes ajoutées et supprimées par une PR | Ce que la brique 3 compare aux critères |
+| **Température** | Réglage du modèle : 0 donne des réponses plus stables et prévisibles, une valeur plus haute des réponses plus variées | 0 pour la revue de PR |
 | **Critères d'acceptation** | Les conditions vérifiables qui disent quand un ticket est terminé | Lus par la brique 3 dans la description du ticket |
 | **fixVersion** | Le champ Jira "Version corrigée" : dans quelle version un ticket a été livré | Rempli par la brique 2 |
 | **Format storage** | Le format XHTML des pages Confluence, avec des macros (`info`, `warning`...) | Page de notes de version |
@@ -304,12 +317,12 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `config.py` | Les réglages, lus dans les variables d'environnement | `AI_PROVIDER`, `AI_MODEL_FAST`, `AI_MASKING`... |
 | `masking.py` | Les règles de masquage (expressions régulières) | Ne masque pas les noms de personnes (limite connue) |
 | `audit.py` | L'écriture du journal d'audit | Jamais de contenu, seulement une empreinte |
-| `prompts.py` | Lit un prompt `.md` (avec son en-tête : version, niveau de modèle, longueur max) et son schéma `.schema.json` | Une variable oubliée fait échouer l'appel (volontairement) |
+| `prompts.py` | Lit un prompt `.md` (avec son en-tête : version, niveau de modèle, longueur max, température) et son schéma `.schema.json` | Une variable oubliée fait échouer l'appel (volontairement) |
 | `validation.py` | Contrôle la réponse : schéma respecté, pas de balisage parasite. Adapte aussi le schéma au mode strict | Ajouté après le bug de la v5 |
 | `providers/anthropic_provider.py` | L'appel réel à Claude | Utilise le format de réponse structuré natif (`output_config`) |
 | `providers/fake_provider.py` | Le faux fournisseur pour les tests | Réponse prévisible, gratuite |
 | `prompts/smoke_test.md` | Prompt du test de bon fonctionnement | |
-| `prompts/pr_review.md` + `.schema.json` | Prompt de la revue de PR (modèle Sonnet) et format de sa réponse | |
+| `prompts/pr_review.md` + `.schema.json` | Prompt de la revue de PR (modèle Sonnet, température 0) et format de sa réponse ; le verdict est calculé par le code | |
 | `prompts/release_notes.md` + `.schema.json` | Prompt des notes de version (modèle Sonnet) et format de sa réponse | |
 | `prompts/triage.md` + `.schema.json` | Prompt du triage (v7) et format de sa réponse. L'en-tête fixe aussi `max_tokens: 4000` | |
 

@@ -18,11 +18,13 @@ class FakeProvider:
         self.last_schema: dict | None = None
 
     def complete(
-        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None
+        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None,
+        temperature: float | None = None,
     ) -> AIResponse:
         self.last_system = system
         self.last_user = user
         self.last_schema = output_schema
+        self.last_temperature = temperature
         return AIResponse(
             text=self.canned_response,
             model=f"fake-{model}",

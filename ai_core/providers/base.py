@@ -23,7 +23,8 @@ class AIProvider(Protocol):
     name: str
 
     def complete(
-        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None
+        self, system: str, user: str, model: str, max_tokens: int, output_schema: dict | None = None,
+        temperature: float | None = None,
     ) -> AIResponse:
         """Envoie un prompt. Avec output_schema, la réponse doit respecter ce schéma JSON (dans .data)."""
         ...

@@ -1,15 +1,6 @@
 {
   "type": "object",
   "properties": {
-    "verdict": {
-      "type": "string",
-      "enum": [
-        "conforme",
-        "partiel",
-        "non_conforme"
-      ],
-      "description": "conforme : tous les critères vérifiables sont couverts ; partiel : au moins un critère partiel ou absent mais l'essentiel est là ; non_conforme : l'essentiel manque"
-    },
     "resume": {
       "type": "string",
       "description": "2 phrases maximum : ce que fait la PR et ce qui manque éventuellement"
@@ -59,7 +50,6 @@
     }
   },
   "required": [
-    "verdict",
     "resume",
     "criteres",
     "hors_perimetre",
