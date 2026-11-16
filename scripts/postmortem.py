@@ -42,12 +42,10 @@ def write_summary(markdown: str) -> None:
 def parse_jira_date(value: str | None) -> datetime | None:
     if not value:
         return None
-    for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z"):
-        try:
-            return datetime.strptime(value, fmt)  # noqa: DTZ007 (le format contient %z : date avec fuseau)
-        except ValueError:
-            continue
-    return None
+    try:
+        return datetime.fromisoformat(value)  # format Jira : 2026-11-16T05:47:43.520-0500 (avec fuseau)
+    except ValueError:
+        return None
 
 
 def duration_text(created: datetime | None, resolved: datetime | None) -> str:
