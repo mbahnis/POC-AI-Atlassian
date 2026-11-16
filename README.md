@@ -185,7 +185,7 @@ docs/
 
 ## 📍 Avancement
 
-*Mis à jour le 12/11/2026*
+*Mis à jour le 16/11/2026*
 
 - [x] Projet Jira de test créé (clé `PI`)
 - [x] ScriptRunner accessible, premier script validé dans la Script Console
@@ -194,7 +194,7 @@ docs/
 - [x] Jeu de tickets de démo fictifs (PI-1 à PI-8) et script de remise à zéro
 - [x] Premier appel à Claude validé en CI (smoke test)
 - [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
-- [ ] Brique 1 : règle Jira Automation branchée et démo validée
+- [x] Brique 1 : déclenchement automatique par Jira Automation validé (ticket créé, commentaire IA en ~30 s)
 - [ ] Espace Confluence de test
 - [ ] Brique 2 : Jira + CI/CD
 - [ ] Brique 4 : incident vers post-mortem
