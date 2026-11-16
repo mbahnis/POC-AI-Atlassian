@@ -19,6 +19,10 @@ class Panier:
     prix_unitaires: dict[str, float] = field(default_factory=dict)
 
     def total(self) -> float:
+        manquants = [ref for ref in self.articles if ref not in self.prix_unitaires]
+        if manquants:
+            # Avant : KeyError non gérée, donc page d'erreur 500 au moment de payer
+            raise PaiementRefuse("Un article de votre panier n'est plus disponible. Merci de le retirer.")
         return round(sum(q * self.prix_unitaires[ref] for ref, q in self.articles.items()), 2)
 
 

@@ -20,3 +20,9 @@ def test_panier_vide_refuse():
 def test_moyen_inconnu_refuse():
     with pytest.raises(PaiementRefuse):
         valider_panier(panier_simple(), "cheque")
+
+
+def test_article_sans_prix_ne_provoque_plus_d_erreur_500():
+    panier = Panier(articles={"lampe": 1, "vase-retire": 1}, prix_unitaires={"lampe": 49.9})
+    with pytest.raises(PaiementRefuse, match="plus disponible"):
+        valider_panier(panier, "carte")
