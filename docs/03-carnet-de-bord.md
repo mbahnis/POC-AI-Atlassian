@@ -316,6 +316,8 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 
 **Leçon :** une IA bien cadrée peut corriger un défaut des données qu'on lui donne, au lieu de le recopier. Mais c'est au code de fournir les bons chiffres.
 
+**Effet de bord repéré sur la PR de finition (#19) :** sa description citait "PIOPS-1" pour contexte. La revue de PR (brique 3) l'a donc rattachée à l'incident, a comparé le code aux "critères" de l'incident et a commenté PIOPS-1. Correction : la revue ne retient que le ticket cité dans le **nom de branche** ou le **titre** de la PR ; la description peut mentionner d'autres tickets sans conséquence.
+
 ---
 
 ## 3. Glossaire

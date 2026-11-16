@@ -2,7 +2,7 @@
 
 Question unique : le code fait-il ce que le ticket demande ? (en complément de la revue humaine)
 
-1. Lit la PR et retrouve les tickets cités (branche, titre, description)
+1. Lit la PR et retrouve le ticket qu'elle traite (nom de branche ou titre)
 2. Lit les critères d'acceptation dans Jira et le diff de la PR dans GitHub
 3. Demande à l'IA d'évaluer chaque critère : couvert, partiel, absent, non vérifiable
 4. Publie (ou met à jour) un commentaire unique dans la PR, et commente le ticket Jira
@@ -100,8 +100,8 @@ def render_no_ticket_comment() -> str:
         f"{MARKER} verdict=sans_ticket -->",
         "## 🤖 Revue IA : aucun ticket Jira associé",
         "",
-        ("Aucune clé de ticket (ex. `PI-12`) n'a été trouvée dans le nom de branche, le titre ou la description "
-         "de la PR. La revue contre les critères d'acceptation n'est pas possible."),
+        ("Aucune clé de ticket (ex. `PI-12`) n'a été trouvée dans le nom de branche ou le titre de la PR. "
+         "La revue contre les critères d'acceptation n'est pas possible."),
         "",
         "Ajoutez la clé dans le titre de la PR pour lancer la revue au prochain push, et pour relier la PR au ticket.",
     ])
@@ -154,7 +154,8 @@ def main() -> int:
 
     github = GitHubClient()
     pr = github.pull_request(args.pr)
-    keys = extract_jira_keys(pr["branch"], pr["title"], pr["body"])
+    # Le ticket est celui de la branche ou du titre ; la description peut citer d'autres tickets pour contexte
+    keys = extract_jira_keys(pr["branch"], pr["title"])
     existing = github.find_comment(args.pr, MARKER)
 
     if not keys:

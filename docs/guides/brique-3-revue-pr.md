@@ -4,7 +4,7 @@
 
 À chaque ouverture ou mise à jour d'une pull request, l'IA répond à **une seule question** : *le code fait-il ce que le ticket demande ?*
 
-1. Elle retrouve le ticket Jira cité dans la PR (clé dans la branche, le titre ou la description).
+1. Elle retrouve le ticket Jira traité par la PR (clé dans le nom de branche ou le titre ; la description peut citer d'autres tickets sans les rattacher).
 2. Elle lit ses **critères d'acceptation** et le **diff** de la PR.
 3. Elle évalue chaque critère : ✅ couvert, 🟠 partiel, ❌ absent, ❔ non vérifiable depuis le code, avec la preuve (fichier et élément de code, ou ce qui manque).
 4. Elle publie **un seul commentaire** dans la PR, mis à jour à chaque push (pas de spam), et commente le **ticket Jira** quand le verdict change.
