@@ -79,6 +79,9 @@ Il est créé automatiquement au premier déploiement. Chez un client, on y ajou
 
 ## Rejouer la démo
 
+> [!NOTE]
+> Validé le 16/11/2026 avec la release `v1.1.0` (PI-1 et PI-4). Les versions déjà publiées sont `v1.0.0` (référence) et `v1.1.0` : la prochaine démo utilise `v1.2.0`.
+
 1. Une première version de référence existe : `v1.0.0` (elle ne génère pas de notes, elle sert de point de départ).
 2. Créer une branche `PI-1-erreur-500-paiement`, modifier `app/paiement.py`, ouvrir une PR dont le titre commence par `PI-1`, la fusionner.
 3. Pousser le tag : sur GitHub, **Releases > Draft a new release > Choose a tag > `v1.1.0` > Create new tag > Publish release** (ou `git tag v1.1.0 && git push origin v1.1.0`).

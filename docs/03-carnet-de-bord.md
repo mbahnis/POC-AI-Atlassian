@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Moi. Ce document me permet de tout retrouver : ce qu'on a fait, dans quel ordre, pourquoi, ce qui a cassé et ce que ça nous a appris.
 > **Comment le lire ?** La partie 1 donne la vue d'ensemble. La partie 2 raconte le projet dans l'ordre. Les parties suivantes sont des références (glossaire, fichiers, accès, dépannage, questions pièges).
-> **Dernière mise à jour :** 16/11/2026 (brique 2 construite, en cours de validation).
+> **Dernière mise à jour :** 16/11/2026 (briques 1 et 2 validées).
 
 ## Sommaire
 
@@ -39,7 +39,7 @@ flowchart LR
     B --> C[💻 Code et PR]
     C -->|Brique 3| D[🔍 Revue IA vs ticket]
     D --> E[🚀 Déploiement]
-    E -->|Brique 2 🔄| F[📄 Release notes Confluence]
+    E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident]
     G -->|Brique 4| H[📚 Post-mortem Confluence]
 ```
@@ -211,7 +211,29 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 - "GitHub for Jira" s'appelle désormais **GitHub for Atlassian**. Le Marketplace contient plusieurs applications tierces aux noms proches : prendre celle éditée par Atlassian.
 - L'administration Jira signale que **ScriptRunner** tourne sur une plateforme **non prise en charge après janvier 2027**. Argument de plus pour ne pas en dépendre.
 
-**État :** code et tests prêts (42 tests). Reste à faire de mon côté : installer GitHub for Jira, créer les 2 flux de statut, vérifier Confluence, puis répéter le scénario complet.
+**Mise en place réalisée (16/11) :**
+- espace Confluence **POC IA** (clé `POCIA`) créé sur `one-atlas-bfqf`, avec une page parente **Release notes** ;
+- variables GitHub `CONFLUENCE_SPACE_KEY`, `CONFLUENCE_PARENT_TITLE`, `CONFLUENCE_BASE_URL` ;
+- **GitHub for Atlassian** installé (Administration > Apps connectées), puis relié au compte GitHub `mbahnis` depuis Jira (Paramètres > Apps > GitHub for Atlassian) ;
+- 2 flux Jira Automation : `Dev - Branche créée` (vers En cours) et `Dev - PR fusionnée` (vers Terminé) ;
+- tag de référence `v1.0.0` publié via une release GitHub.
+
+**Le test complet (16/11, release `v1.1.0`) :**
+
+| Étape | Résultat |
+|---|---|
+| Push des branches `PI-1-erreur-500-paiement` et `PI-4-export-csv-commandes` | PI-1 et PI-4 passent **En cours** seuls |
+| Fusion des PR #11 et #12 | PI-1 et PI-4 passent **Terminé** seuls |
+| Publication de la release `v1.1.0` | Tests, déploiement simulé, notes de version IA (Sonnet) |
+| Publication | Page **Release notes v1.1.0** dans Confluence, propre (résumé métier, nouveautés, corrections, liens tickets et PR) |
+| Jira | Version `v1.1.0` créée et livrée ; commentaire "🚀 Livré en production dans la version v1.1.0" sur PI-1 et PI-4 |
+
+**Ce que les deux PR modifiaient :** PI-1 corrige une vraie erreur 500 (un article sans prix faisait planter le calcul du total) ; PI-4 ajoute `app/export.py` (export CSV des commandes payées du mois).
+
+**Contraintes découvertes :**
+- Je ne peux pas créer de **tag**, de **variable GitHub** ou lancer un **workflow** depuis ma session Claude (passerelle GitHub restreinte) : ces actions restent manuelles. Pour une release, c'est de toute façon une décision humaine.
+- Le connecteur Atlassian ne se connecte qu'à **un site à la fois** (ici le sandbox) et ne permet pas de créer des **flux Automation** : ceux-ci se créent dans l'interface.
+- GitHub for Atlassian avait été connecté sur **tous les dépôts** : à restreindre au seul dépôt du POC (principe du moindre privilège).
 
 ---
 
@@ -333,6 +355,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | PI-8 | Le panier se vide après une erreur | Sujet voisin : l'IA doit nuancer |
 | PI-9 | appli lente sur telephone | Test du **déclenchement automatique** (16/11). **À supprimer avant une démo** |
 | PI-10 | copie de PI-2 | Réservé à la **comparaison Rovo** |
+| PI-1, PI-4 | (voir plus haut) | Passés **Terminé** et livrés dans `v1.1.0` lors du test de la brique 2 (16/11) |
 | PI-11 | copie de PI-2, sans label de démo | Répétition du ticket créé en direct ; a révélé les bugs corrigés en v6 et v7. **À supprimer avant une démo** |
 
 PI-1 à PI-8 portent le label `poc-demo` : ce sont ceux que `demo_reset` supprime et recrée.
@@ -421,7 +444,6 @@ Je ne suis pas juriste, donc je ne m'engage pas sur la conformité. Ce que le PO
 
 - [ ] Passer la priorité par défaut du projet à **Moyenne**
 - [ ] Demander l'activation de Rovo à l'admin Atlassian de CBTW (facultatif) pour compléter la comparaison sur PI-10
-- [ ] **Brique 2** : installer GitHub for Jira, créer les 2 flux de statut, vérifier Confluence, poser `v1.0.0`, répéter le scénario complet
 - [ ] Brique 4 : incident vers post-mortem (Jira Service Management est disponible sur la sandbox)
 - [ ] Brique 3 : revue IA des PR contre le ticket
 - [ ] Remplacer mon compte par un compte de service pour signer les commentaires (pour la version client)

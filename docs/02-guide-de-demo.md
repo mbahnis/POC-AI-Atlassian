@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
 > **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) scénarisée, **à répéter avant tout usage client**. Briques 3 et 4 à venir.
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Briques 3 et 4 à venir.
 
 ---
 
@@ -88,10 +88,13 @@
 
 ---
 
-## 2️⃣ bis. Livraison tracée (4 min, optionnel tant que la brique 2 n'est pas répétée)
+## 2️⃣ bis. Livraison tracée (4 min)
 
-> [!WARNING]
-> Séquence à jouer seulement après une répétition complète (voir le [guide de la brique 2](guides/brique-2-release.md#rejouer-la-démo)). Préparer à l'avance une branche `PI-1-erreur-500-paiement` avec une PR ouverte, prête à être fusionnée.
+> [!IMPORTANT]
+> **À préparer avant le rendez-vous :** une branche au nom d'un ticket ouvert (ex. `PI-5-...`) avec une PR prête à être fusionnée, et le numéro de la prochaine version (la dernière publiée est `v1.1.0` : utiliser `v1.2.0`). Le guide de la brique 2 explique [comment rejouer la démo](guides/brique-2-release.md#rejouer-la-démo).
+
+> [!TIP]
+> Plan B si le réseau est lent : montrer la page **Release notes v1.1.0** déjà publiée dans l'espace Confluence **POC IA**, et les tickets PI-1 et PI-4 (version `v1.1.0`, commentaire "Livré").
 
 ### Étape 2.1 : le ticket suit le code, tout seul
 
@@ -102,7 +105,7 @@
 
 ### Étape 2.2 : la release documente elle-même
 
-**À faire :** publier la release `v1.1.0` sur GitHub (Releases > Draft a new release), montrer le workflow qui se lance, puis ouvrir la page de notes de version et revenir sur PI-1.
+**À faire :** publier la release suivante (`v1.2.0`) sur GitHub (Releases > Draft a new release > Tag : saisir `v1.2.0` puis **Create new tag**), montrer le workflow qui se lance, puis ouvrir la page de notes de version dans l'espace Confluence **POC IA** et revenir sur le ticket.
 
 **À dire pendant l'attente (environ 1 min) :**
 > "On déploie. Pendant ce temps, l'IA lit les PR fusionnées depuis la dernière version et les tickets qu'elles citent, et elle rédige les notes de version pour vos métiers, pas pour les développeurs."
@@ -114,7 +117,7 @@
 | Le résumé en haut | "Lisible par le support et le produit, sans jargon." |
 | Les catégories (nouveautés, corrections, technique) | "Classées automatiquement." |
 | Les liens vers les tickets et PR | "Chaque ligne est traçable. L'IA ne peut citer que ce qui existe réellement." |
-| Dans PI-1 : version `v1.1.0` et commentaire "Livré" | "Le support sait immédiatement dans quelle version le bug est corrigé." |
+| Dans le ticket : la version et le commentaire "Livré" | "Le support sait immédiatement dans quelle version le bug est corrigé." |
 
 **Phrase de transition :**
 > "Fini les statuts oubliés et les release notes écrites le vendredi soir : le code, le ticket et la documentation restent alignés."
