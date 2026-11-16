@@ -44,8 +44,14 @@ Rien de plus que les briques précédentes : mêmes secrets (`ANTHROPIC_API_KEY`
 Le ticket **PI-3** demande un message d'erreur clair quand le paiement est refusé, avec 4 critères dont **"en français et en anglais"**.
 
 1. La branche `PI-3-message-erreur-paiement` ajoute `app/messages.py` : messages lisibles, code bancaire jamais affiché, action "Réessayer"... mais **uniquement en français** (l'oubli est volontaire).
-2. On ouvre la PR : environ 1 minute plus tard, le commentaire de revue doit signaler le critère bilingue comme partiel ou absent, et PI-3 reçoit un commentaire "Points à compléter".
-3. On pousse un correctif ajoutant l'anglais : le commentaire de la PR est **mis à jour** (pas dupliqué) et passe à ✅ ; PI-3 est commenté car le verdict a changé.
+2. On ouvre la PR : environ 1 minute plus tard, le commentaire de revue signale le critère bilingue **absent**, et PI-3 reçoit un commentaire "Points à compléter".
+3. On pousse l'anglais, puis son branchement sur la langue du navigateur : le **même** commentaire est mis à jour et le critère bilingue passe ✅ **couvert**.
+4. Le verdict reste 🟠 partiel, à juste titre : les critères d'interface (affichage sous le formulaire, bouton qui vide le formulaire) demandent du code front, absent de la PR. L'IA le dit.
+
+> [!NOTE]
+> **Validé le 16/11/2026 sur la PR #15**, laissée ouverte comme support de démo. Évolution réelle : bilingue ❌ absent, puis 🟠 (pas branché), puis ✅ couvert ; code bancaire ✅ dès le départ ; interface 🟠 "front manquant".
+>
+> Pour une démo qui finit en ✅, il faudrait une appli de démo avec une vraie couche front, ou un ticket limité au back : on a préféré **ne pas forcer l'IA**.
 
 ## Adapter à un client
 

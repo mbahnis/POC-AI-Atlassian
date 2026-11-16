@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Moi. Ce document me permet de tout retrouver : ce qu'on a fait, dans quel ordre, pourquoi, ce qui a cassé et ce que ça nous a appris.
 > **Comment le lire ?** La partie 1 donne la vue d'ensemble. La partie 2 raconte le projet dans l'ordre. Les parties suivantes sont des références (glossaire, fichiers, accès, dépannage, questions pièges).
-> **Dernière mise à jour :** 16/11/2026 (briques 1 et 2 validées, brique 3 construite).
+> **Dernière mise à jour :** 16/11/2026 (briques 1, 2 et 3 validées).
 
 ## Sommaire
 
@@ -37,7 +37,7 @@ Plutôt que quatre démos isolées, on suit **la vie d'un ticket**, de sa créat
 flowchart LR
     A[📝 Ticket créé] -->|Brique 1 ✅| B[🧠 Triage IA]
     B --> C[💻 Code et PR]
-    C -->|Brique 3 🔄| D[🔍 Revue IA vs ticket]
+    C -->|Brique 3 ✅| D[🔍 Revue IA vs ticket]
     D --> E[🚀 Déploiement]
     E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident]
@@ -266,7 +266,14 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 - **Instabilité de l'IA** entre deux exécutions sur le même critère.
 - Corrections ([décision 0010, mise à jour](decisions/0010-revue-pr-contre-ticket.md)) : verdict **calculé par le code** à partir des statuts, **température 0**, règle explicite pour les critères d'interface. Le scénario est complété par un dernier commit qui expose les messages via une fonction d'API utilisant la langue du navigateur.
 
-**Leçon :** l'IA analyse, le code tranche. Et un scénario de démo doit être conçu pour pouvoir réussir honnêtement.
+**Troisième push, après la correction (prompt v2, température 0, verdict calculé) :** un commit ajoute `app/api.py`, une réponse d'API qui sert le message dans la langue du navigateur. Résultat : bilingue ✅ **couvert**, code bancaire ✅, les deux critères d'interface 🟠 partiels avec la justification "le front qui consomme ces champs n'est pas dans le diff". Verdict 🟠.
+
+**Décision : on s'arrête là et on ne force pas l'IA.** Elle a raison : la partie front du ticket n'est pas faite. La règle "interface = non vérifiable" que j'avais ajoutée était une façon de tordre le résultat pour la démo ; elle a privilégié l'exactitude. La démo raconte maintenant cette histoire réelle (oubli détecté, correction reconnue, reste à faire signalé). La PR #15 reste **ouverte** comme support de démo.
+
+**Leçons :**
+- l'IA analyse, le code tranche (verdict calculé) ;
+- un scénario de démo doit pouvoir réussir honnêtement : PI-3 mélangeait back et front alors que l'appli de démo n'a pas de front ;
+- quand l'IA contredit le résultat qu'on espérait, vérifier d'abord si elle n'a pas raison.
 
 ---
 
@@ -386,7 +393,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 |---|---|---|
 | PI-1 | Erreur 500 au paiement par carte | Ticket bien rédigé, **doublon** à détecter |
 | PI-2 | ça marche pas le paiement | **Ticket flou principal**, démo du triage |
-| PI-3 | Message d'erreur FR/EN au refus de paiement | Story avec critères précis, pour la **brique 3** |
+| PI-3 | Message d'erreur FR/EN au refus de paiement | Story avec critères précis, pour la **brique 3** ; PR de démo **#15** laissée ouverte |
 | PI-4 | Export CSV des commandes | Story bien rédigée : l'IA ne doit pas la réécrire |
 | PI-5 | page produit lente | Ticket vague : l'IA doit lister les questions |
 | PI-6 | bug login sur mobile | **Données personnelles** : démo du masquage |
@@ -484,5 +491,4 @@ Je ne suis pas juriste, donc je ne m'engage pas sur la conformité. Ce que le PO
 - [ ] Passer la priorité par défaut du projet à **Moyenne**
 - [ ] Demander l'activation de Rovo à l'admin Atlassian de CBTW (facultatif) pour compléter la comparaison sur PI-10
 - [ ] Brique 4 : incident vers post-mortem (Jira Service Management est disponible sur la sandbox)
-- [ ] Brique 3 : valider sur la PR de démo PI-3 (oubli de l'anglais, puis correctif)
 - [ ] Remplacer mon compte par un compte de service pour signer les commentaires (pour la version client)

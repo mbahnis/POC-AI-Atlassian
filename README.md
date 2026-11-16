@@ -40,7 +40,7 @@ L'objectif : des réponses concrètes, démontrables en quelques minutes, sur de
 flowchart LR
     A[📝 Ticket créé] -->|Brique 1| B[🧠 Triage IA]
     B --> C[💻 Code et PR]
-    C -->|Brique 3| D[🔍 Revue IA vs ticket]
+    C -->|Brique 3 ✅| D[🔍 Revue IA vs ticket]
     D --> E[🚀 Déploiement]
     E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident en production]
@@ -205,5 +205,5 @@ docs/
 - [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
 - [x] Brique 1 : déclenchement automatique par Jira Automation validé (ticket créé, commentaire IA en ~30 s)
 - [x] Brique 2 : livraison tracée validée de bout en bout le 16/11 (statuts natifs, release v1.1.0, notes de version IA dans Confluence, version Jira) ([guide](docs/guides/brique-2-release.md))
-- [x] Brique 3 : revue IA des PR contre les critères du ticket ([guide](docs/guides/brique-3-revue-pr.md)), en attente de validation réelle (PR de démo PI-3)
+- [x] Brique 3 : revue IA des PR contre les critères du ticket, validée le 16/11 sur la PR de démo #15 (PI-3) ([guide](docs/guides/brique-3-revue-pr.md))
 - [ ] Brique 4 : incident vers post-mortem (projet Service Management dédié + page Post-mortems dans Confluence)

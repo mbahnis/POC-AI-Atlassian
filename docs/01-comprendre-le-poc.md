@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
-> **Mis à jour le** 16/11/2026 : briques 1 (triage IA) et 2 (livraison tracée) validées en conditions réelles, brique 3 (revue de PR) construite et en cours de validation.
+> **Mis à jour le** 16/11/2026 : briques 1 (triage IA), 2 (livraison tracée) et 3 (revue de PR) validées en conditions réelles.
 
 ---
 
@@ -19,7 +19,7 @@ Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
 | Tickets flous, incomplets, en doublon | Allers-retours, tri manuel, bugs traités deux fois | 🧠 **1. Triage IA** ✅ |
 | Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** ✅ |
 | Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** ✅ |
-| Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 **3. Revue IA des PR** 🔄 |
+| Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 **3. Revue IA des PR** ✅ |
 | Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 4. Incident vers post-mortem (à venir) |
 
 ## 3. Ce qui fonctionne aujourd'hui
@@ -58,13 +58,15 @@ Questions       5 questions précises à poser à l'auteur
 > [!NOTE]
 > Les statuts et l'affichage des branches, PR et déploiements sont **100 % natifs** (application GitHub for Jira + flux Automation). Le code ne fait que ce que le natif ne sait pas faire : rédiger les notes et tenir les versions Jira à jour.
 
-### 🔍 Brique 3 : la revue de PR contre le ticket (en cours de validation)
+### 🔍 Brique 3 : la revue de PR contre le ticket
 
 **Ce que voit le développeur :** environ une minute après l'ouverture de sa PR, un commentaire liste chaque critère d'acceptation du ticket avec un statut (✅ couvert, 🟠 partiel, ❌ absent, ❔ non vérifiable) et la preuve dans le code. À chaque push, le **même** commentaire est mis à jour.
 
 **Ce que voit le chef de projet :** un commentaire dans le ticket Jira quand le verdict change ("Points à compléter : version anglaise du message").
 
 **Ce que ça change :** l'oubli fonctionnel est repéré avant la revue humaine, pas en recette une semaine plus tard.
+
+**Validé le 16/11 (PR #15, PI-3) :** l'oubli de la version anglaise a été détecté au premier push, puis reconnu comme corrigé. L'IA a aussi signalé, à juste titre, que la partie front du ticket n'était pas dans la PR. Le verdict (conforme, partiel, non conforme) est calculé par le code à partir de son analyse.
 
 > [!NOTE]
 > La revue IA ne juge ni le style ni l'architecture et **ne bloque pas** la fusion : elle complète la revue humaine sur la seule question "le code fait-il ce que demande le ticket ?".
