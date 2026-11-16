@@ -13,6 +13,7 @@ Chaque choix structurant du POC est consigné dans une fiche courte : le context
 | [0007](0007-triage-propose-ne-modifie-pas.md) | Le triage IA propose en commentaire, il ne modifie pas le ticket | Acceptée |
 | [0008](0008-sorties-structurees.md) | Sorties structurées garanties par l'API | Acceptée |
 | [0009](0009-release-notes-publication-interchangeable.md) | Brique 2 : statuts en natif, notes de version IA, publication interchangeable | Acceptée |
+| [0010](0010-revue-pr-contre-ticket.md) | Brique 3 : revue IA de PR limitée à "le code fait-il ce que demande le ticket ?" | Acceptée |
 
 ## Modèle de fiche
 

@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "conforme",
+        "partiel",
+        "non_conforme"
+      ],
+      "description": "conforme : tous les critères vérifiables sont couverts ; partiel : au moins un critère partiel ou absent mais l'essentiel est là ; non_conforme : l'essentiel manque"
+    },
+    "resume": {
+      "type": "string",
+      "description": "2 phrases maximum : ce que fait la PR et ce qui manque éventuellement"
+    },
+    "criteres": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string"
+          },
+          "critere": {
+            "type": "string"
+          },
+          "statut": {
+            "type": "string",
+            "enum": [
+              "couvert",
+              "partiel",
+              "absent",
+              "non_verifiable"
+            ]
+          },
+          "preuve": {
+            "type": "string",
+            "description": "Fichier et élément de code, ou ce qui manque"
+          }
+        },
+        "required": [
+          "ticket",
+          "critere",
+          "statut",
+          "preuve"
+        ]
+      }
+    },
+    "hors_perimetre": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests": {
+      "type": "string",
+      "description": "Une phrase : les tests ajoutés couvrent-ils les critères ?"
+    }
+  },
+  "required": [
+    "verdict",
+    "resume",
+    "criteres",
+    "hors_perimetre",
+    "tests"
+  ]
+}

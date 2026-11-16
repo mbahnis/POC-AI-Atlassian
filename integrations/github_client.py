@@ -65,6 +65,34 @@ class GitHubClient:
             commits = self._get(f"compare/{base}...{head}")["commits"]
         return [c["commit"]["message"] for c in commits]
 
+    def pull_request(self, number: int) -> dict:
+        pr = self._get(f"pulls/{number}")
+        return {"number": number, "title": pr["title"], "branch": pr["head"]["ref"], "body": pr.get("body") or "",
+                "url": pr["html_url"], "author": pr["user"]["login"]}
+
+    def pull_request_files(self, number: int) -> list[dict]:
+        """Fichiers modifiés par la PR, avec leur diff (patch) quand GitHub le fournit."""
+        return [{"filename": f["filename"], "status": f["status"], "patch": f.get("patch", "")}
+                for f in self._get(f"pulls/{number}/files", per_page=100)]
+
+    def find_comment(self, number: int, marker: str) -> dict | None:
+        """Retrouve un commentaire de PR contenant un marqueur invisible (pour le mettre à jour au lieu d'en ajouter)."""
+        for comment in self._get(f"issues/{number}/comments", per_page=100):
+            if marker in (comment.get("body") or ""):
+                return comment
+        return None
+
+    def upsert_comment(self, number: int, marker: str, body: str) -> str:
+        url = f"https://api.github.com/repos/{self.repo}/issues"
+        existing = self.find_comment(number, marker)
+        if existing:
+            resp = self.session.patch(f"{url}/comments/{existing['id']}", json={"body": body})
+        else:
+            resp = self.session.post(f"{url}/{number}/comments", json={"body": body})
+        if resp.status_code >= 400:
+            raise RuntimeError(f"GitHub commentaire PR #{number} -> {resp.status_code} : {resp.text[:300]}")
+        return resp.json()["html_url"]
+
     def upsert_release(self, tag: str, name: str, body: str) -> str:
         """Crée la GitHub Release du tag (ou met à jour sa description) et renvoie son URL."""
         url = f"https://api.github.com/repos/{self.repo}/releases"

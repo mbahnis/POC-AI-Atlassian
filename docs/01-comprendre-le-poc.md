@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
-> **Mis à jour le** 16/11/2026 : briques 1 (triage IA) et 2 (livraison tracée) validées en conditions réelles.
+> **Mis à jour le** 16/11/2026 : briques 1 (triage IA) et 2 (livraison tracée) validées en conditions réelles, brique 3 (revue de PR) construite et en cours de validation.
 
 ---
 
@@ -19,7 +19,7 @@ Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
 | Tickets flous, incomplets, en doublon | Allers-retours, tri manuel, bugs traités deux fois | 🧠 **1. Triage IA** ✅ |
 | Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** ✅ |
 | Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** ✅ |
-| Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 3. Revue IA des PR (à venir) |
+| Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 **3. Revue IA des PR** 🔄 |
 | Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 4. Incident vers post-mortem (à venir) |
 
 ## 3. Ce qui fonctionne aujourd'hui
@@ -57,6 +57,17 @@ Questions       5 questions précises à poser à l'auteur
 
 > [!NOTE]
 > Les statuts et l'affichage des branches, PR et déploiements sont **100 % natifs** (application GitHub for Jira + flux Automation). Le code ne fait que ce que le natif ne sait pas faire : rédiger les notes et tenir les versions Jira à jour.
+
+### 🔍 Brique 3 : la revue de PR contre le ticket (en cours de validation)
+
+**Ce que voit le développeur :** environ une minute après l'ouverture de sa PR, un commentaire liste chaque critère d'acceptation du ticket avec un statut (✅ couvert, 🟠 partiel, ❌ absent, ❔ non vérifiable) et la preuve dans le code. À chaque push, le **même** commentaire est mis à jour.
+
+**Ce que voit le chef de projet :** un commentaire dans le ticket Jira quand le verdict change ("Points à compléter : version anglaise du message").
+
+**Ce que ça change :** l'oubli fonctionnel est repéré avant la revue humaine, pas en recette une semaine plus tard.
+
+> [!NOTE]
+> La revue IA ne juge ni le style ni l'architecture et **ne bloque pas** la fusion : elle complète la revue humaine sur la seule question "le code fait-il ce que demande le ticket ?".
 
 ## 4. Comment ça marche
 
@@ -152,6 +163,12 @@ Grâce à la clé du ticket (`PI-1`) dans le nom de branche ou le titre de la PR
 </details>
 
 <details>
+<summary><b>Pourquoi la revue de PR ne commente-t-elle pas le style ou les bugs ?</b></summary>
+
+Parce que d'autres outils le font déjà, et que c'est le rôle de la revue humaine. Notre angle est celui qu'aucun outil ne couvre sans Jira : relier le code au besoin métier. Une revue courte et ciblée est aussi beaucoup plus lue qu'une liste de 30 remarques.
+</details>
+
+<details>
 <summary><b>Combien de temps pour l'installer chez un client ?</b></summary>
 
 Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter le référentiel de composants et labels, brancher le flux), puis quelques jours d'observation pour ajuster le prompt à leurs tickets.
@@ -167,6 +184,7 @@ Pour la brique 1 sur un projet : une demi-journée (créer les accès, adapter l
 | **1 ter. Automatisation** | Flux Jira Automation qui déclenche le triage à la création | Zéro action manuelle : c'est ce qui fait l'effet en démo |
 | **1 quater. Doublons** | Les tickets candidats sont envoyés avec un extrait de leur description | L'IA ne voyait que les titres et ne pouvait pas confirmer un doublon évident |
 | **2. Livraison** | Statuts en natif, workflow de release, notes de version IA, versions Jira | Montrer le lien entre le code, le déploiement et la documentation sans ressaisie |
+| **3. Revue de PR** | Évaluation de chaque critère d'acceptation face au diff, commentaire unique mis à jour, Jira informé si le verdict change | Repérer les oublis fonctionnels avant la recette |
 
 Chaque choix important est expliqué dans une [fiche de décision](decisions/README.md).
 
@@ -175,7 +193,7 @@ Chaque choix important est expliqué dans une [fiche de décision](decisions/REA
 | Je veux... | Aller voir |
 |---|---|
 | Préparer et faire la démo | [Guide de démo](02-guide-de-demo.md) |
-| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md), puis [brique 1](guides/brique-1-triage.md) et [brique 2](guides/brique-2-release.md) |
+| Installer le POC sur un autre environnement | [Mise en place](guides/mise-en-place.md), puis [brique 1](guides/brique-1-triage.md), [brique 2](guides/brique-2-release.md) et [brique 3](guides/brique-3-revue-pr.md) |
 | Comprendre l'architecture et l'adapter à un client | [Architecture](architecture.md) |
 | Savoir pourquoi un choix a été fait | [Décisions](decisions/README.md) |
 | Modifier le comportement du triage | `ai_core/prompts/triage.md` et `config/triage.yaml` |

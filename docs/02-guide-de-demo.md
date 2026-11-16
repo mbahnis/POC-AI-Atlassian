@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
 > **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Briques 3 et 4 à venir.
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) scénarisée, **à répéter avant tout usage client**. Briques 3 et 4 à venir.
 
 ---
 
@@ -31,6 +31,8 @@
 |---|---|---|---|
 | 0 | Ouverture | 1 min | "On ne vous vend pas de l'IA, on vous rend du temps" |
 | 1 | Triage IA en direct | 4 min | "Un ticket flou devient exploitable en 30 secondes" |
+| 2 bis | Revue de PR contre le ticket | 3 min | "L'oubli est repéré avant la recette" |
+| 2 ter | Livraison tracée | 4 min | "Le code, le ticket et la doc restent alignés" |
 | 2 | Les garde-fous | 2 min | "L'IA propose, votre équipe décide" |
 | 3 | Conclusion | 1 min | "On commence par la brique qui vous fait gagner le plus" |
 
@@ -88,7 +90,36 @@
 
 ---
 
-## 2️⃣ bis. Livraison tracée (4 min)
+## 2️⃣ bis. Revue de PR contre le ticket (3 min)
+
+> [!WARNING]
+> Séquence à jouer après une répétition (voir le [guide de la brique 3](guides/brique-3-revue-pr.md#rejouer-la-démo)). Préparer à l'avance une PR ouverte dont la revue est déjà faite, plus un commit correctif prêt à pousser.
+
+### Étape 2.1 : la PR oublie un critère
+
+**À faire :** ouvrir le ticket **PI-3** (4 critères d'acceptation, dont "en français et en anglais"), puis la PR associée et son commentaire **🤖 Revue IA**.
+
+**À dire :**
+> "Le développeur a livré les messages d'erreur. Tout a l'air bon, les tests passent. Mais le ticket demandait le français **et** l'anglais. L'IA a comparé le code à chaque critère : elle a vu que la version anglaise manque, et elle le dit avant même la revue humaine."
+
+**À pointer :**
+
+| Point | À dire |
+|---|---|
+| Le tableau des critères | "Chaque critère du ticket, avec la preuve dans le code." |
+| ❔ "Non vérifiable" | "Elle ne prétend pas vérifier ce que le code seul ne montre pas, comme l'affichage sans rechargement : c'est pour le testeur." |
+| Le commentaire dans PI-3 | "Le chef de projet est prévenu dans Jira, sans ouvrir GitHub." |
+
+### Étape 2.2 : la correction est reconnue
+
+**À faire :** pousser le commit correctif (ajout de l'anglais), attendre environ une minute, rafraîchir la PR.
+
+**À dire :**
+> "Même commentaire, mis à jour : plus de bruit à chaque push. Et comme le verdict est passé au vert, le ticket est informé."
+
+---
+
+## 2️⃣ ter. Livraison tracée (4 min)
 
 > [!IMPORTANT]
 > **À préparer avant le rendez-vous :** une branche au nom d'un ticket ouvert (ex. `PI-5-...`) avec une PR prête à être fusionnée, et le numéro de la prochaine version (la dernière publiée est `v1.1.0` : utiliser `v1.2.0`). Le guide de la brique 2 explique [comment rejouer la démo](guides/brique-2-release.md#rejouer-la-démo).
@@ -96,14 +127,14 @@
 > [!TIP]
 > Plan B si le réseau est lent : montrer la page **Release notes v1.1.0** déjà publiée dans l'espace Confluence **POC IA**, et les tickets PI-1 et PI-4 (version `v1.1.0`, commentaire "Livré").
 
-### Étape 2.1 : le ticket suit le code, tout seul
+### Étape 2.3 : le ticket suit le code, tout seul
 
 **À faire :** ouvrir PI-1 dans Jira, montrer le panneau **Développement** (branche et PR liées), puis fusionner la PR sur GitHub et rafraîchir PI-1.
 
 **À dire :**
 > "Le développeur n'a rien mis à jour dans Jira. Il a juste mis la clé du ticket dans le nom de sa branche. Le ticket est passé En cours à la création de la branche, et Terminé à la fusion. Tout ça, c'est du **natif Atlassian** : votre licence le fait déjà, on l'a simplement branché."
 
-### Étape 2.2 : la release documente elle-même
+### Étape 2.4 : la release documente elle-même
 
 **À faire :** publier la release suivante (`v1.2.0`) sur GitHub (Releases > Draft a new release > Tag : saisir `v1.2.0` puis **Create new tag**), montrer le workflow qui se lance, puis ouvrir la page de notes de version dans l'espace Confluence **POC IA** et revenir sur le ticket.
 
@@ -226,6 +257,27 @@
 
 **À dire :**
 > "Dans la démo, il est simulé. Chez vous, on branche votre vraie chaîne : Terraform, Helm, ArgoCD... Ce qui compte, c'est que le déploiement soit déclaré dans un environnement nommé, ce qui le fait remonter dans Jira, et qu'on puisse y ajouter une validation manuelle avant la production."
+</details>
+
+<details>
+<summary><b>"On a déjà un outil d'IA qui relit le code (Copilot, etc.)"</b></summary>
+
+**À dire :**
+> "Très bien, gardez-le : il juge la qualité du code. Le nôtre répond à une autre question, que ces outils ne peuvent pas trancher sans Jira : est-ce que le code fait ce que le métier a demandé ? Les deux se complètent."
+</details>
+
+<details>
+<summary><b>"Et si l'IA dit qu'un critère manque alors qu'il est là ?"</b></summary>
+
+**À dire :**
+> "C'est possible, c'est pour ça que la revue ne bloque pas la fusion et qu'elle donne sa preuve : le développeur voit tout de suite si elle se trompe. On mesure le taux de faux positifs pendant quelques semaines avant d'envisager de la rendre bloquante."
+</details>
+
+<details>
+<summary><b>"Notre code part chez un fournisseur d'IA ?"</b></summary>
+
+**À dire :**
+> "Seul le diff de la PR est envoyé, avec le masquage des données sensibles (e-mails, clés d'API...). Si c'est un point bloquant, le modèle peut être hébergé chez votre cloud provider (Bedrock, Vertex AI, Azure) : on change une variable, pas le code."
 </details>
 
 <details>
