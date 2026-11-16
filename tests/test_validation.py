@@ -28,7 +28,7 @@ def test_schema_strict_ferme_et_compatible():
     strict = to_strict_schema(SCHEMA)
     assert strict["additionalProperties"] is False
     assert "maximum" not in strict["properties"]["qualite_ticket"]
-    assert "anyOf" in strict["properties"]["composant"]
+    assert strict["properties"]["composant"]["type"] == "string"
     # le schéma d'origine n'est pas modifié
     assert SCHEMA["properties"]["questions_a_poser"]["maxItems"] == 5
 

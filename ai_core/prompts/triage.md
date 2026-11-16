@@ -1,6 +1,6 @@
 ---
 name: triage
-version: 5
+version: 6
 tier: fast
 ---
 # System
@@ -49,4 +49,4 @@ Labels possibles : $labels
 ## Autres tickets ouverts du projet (pour la détection de doublons)
 $candidates
 
-Analyse ce ticket et transmets ton résultat avec l'outil prévu.
+Analyse ce ticket et réponds au format demandé. Si aucun composant ne convient, indique "inconnu".
