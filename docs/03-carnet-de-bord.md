@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Moi. Ce document me permet de tout retrouver : ce qu'on a fait, dans quel ordre, pourquoi, ce qui a cassé et ce que ça nous a appris.
 > **Comment le lire ?** La partie 1 donne la vue d'ensemble. La partie 2 raconte le projet dans l'ordre. Les parties suivantes sont des références (glossaire, fichiers, accès, dépannage, questions pièges).
-> **Dernière mise à jour :** 16/11/2026 (briques 1 et 2 validées).
+> **Dernière mise à jour :** 16/11/2026 (briques 1 et 2 validées, brique 3 construite).
 
 ## Sommaire
 
@@ -37,7 +37,7 @@ Plutôt que quatre démos isolées, on suit **la vie d'un ticket**, de sa créat
 flowchart LR
     A[📝 Ticket créé] -->|Brique 1 ✅| B[🧠 Triage IA]
     B --> C[💻 Code et PR]
-    C -->|Brique 3| D[🔍 Revue IA vs ticket]
+    C -->|Brique 3 🔄| D[🔍 Revue IA vs ticket]
     D --> E[🚀 Déploiement]
     E -->|Brique 2 ✅| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident]
@@ -204,7 +204,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 **Choix notables :**
 - **Publication interchangeable** : Confluence si `CONFLUENCE_SPACE_KEY` est défini, sinon GitHub Release ([décision 0009](decisions/0009-release-notes-publication-interchangeable.md)).
 - **Premier tag = référence** : `v1.0.0` ne produit pas de notes, sinon l'IA résumerait tout l'historique du POC.
-- **Appli fictive** `app/paiement.py` : elle ne sert qu'à avoir du vrai code à modifier dans les PR de démo. Volontairement, ses messages d'erreur sont **uniquement en français** : c'est l'oubli que la brique 3 détectera face au ticket PI-3.
+- **Appli fictive** `app/` : elle ne sert qu'à avoir du vrai code à modifier dans les PR de démo (briques 2 et 3).
 
 **Blocages rencontrés :**
 - Confluence répondait en **404** : il n'existe pas sur le site sandbox de Jira (`one-atlas-bfqf-sandbox`), mais sur le **site principal partagé** `one-atlas-bfqf` (où mes collègues ont leurs espaces). Décision prise avec moi : créer un **espace dédié `POCIA`** sur ce site et n'écrire que dedans. Le code accepte un site Confluence différent du site Jira (`CONFLUENCE_BASE_URL`), ce qui arrivera aussi chez des clients.
@@ -235,6 +235,27 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 - Le connecteur Atlassian ne se connecte qu'à **un site à la fois** (ici le sandbox) et ne permet pas de créer des **flux Automation** : ceux-ci se créent dans l'interface.
 - GitHub for Atlassian avait été connecté sur **tous les dépôts** : à restreindre au seul dépôt du POC (principe du moindre privilège).
 
+### 📅 16/11/2026 : brique 3, la revue de PR contre le ticket
+
+**Pourquoi l'ordre a changé :** mon README listait la brique 3 en dernier (bonus). On l'a faite avant la 4 car elle suit le fil rouge (la revue arrive avant le déploiement), elle est rapide, et elle ne demandait aucune préparation de ma part, contrairement à la brique 4 (projet Service Management à créer).
+
+**Le principe ([décision 0010](decisions/0010-revue-pr-contre-ticket.md)) :** une seule question, "le code fait-il ce que demande le ticket ?". Pas de revue de style : d'autres outils et les humains le font.
+
+**Comment ça marche :**
+1. Workflow `pr-review.yml` sur chaque PR (ouverture, push, changement de titre), sauf brouillons.
+2. `scripts/review_pr.py` retrouve le ticket (clé dans la branche, le titre ou la description), lit sa description dans Jira et le diff dans GitHub (fichiers générés et docs ignorés, diff tronqué au-delà de 40 000 caractères).
+3. L'IA (Sonnet, prompt `pr_review`) évalue chaque critère : couvert, partiel, absent, non vérifiable, avec une preuve.
+4. Un **commentaire unique** dans la PR (retrouvé grâce au marqueur invisible `<!-- poc-ia-revue-pr verdict=... -->`), mis à jour à chaque push.
+5. Le ticket Jira n'est commenté que si le **verdict change** (le marqueur garde le verdict précédent).
+
+**Détails de conception à connaître :**
+- Le workflow exécute le code de revue **de `main`**, pas celui de la PR : une PR ne peut pas modifier son propre relecteur pour détourner les secrets. Conséquence : la PR qui a introduit la brique 3 n'a pas été relue (le script n'existait pas encore sur `main`), le workflow affiche simplement une note.
+- Une PR sans clé de ticket reçoit un commentaire qui invite à l'ajouter.
+
+**Scénario de démo préparé :** la branche `PI-3-message-erreur-paiement` ajoute `app/messages.py` (messages lisibles, code bancaire masqué, action "Réessayer") **uniquement en français**, alors que PI-3 exige français et anglais. Attendu : critère bilingue partiel ou absent, puis vert après un commit correctif.
+
+**État :** code et tests prêts (49 tests). Reste à valider sur la PR de démo.
+
 ---
 
 ## 3. Glossaire
@@ -262,6 +283,8 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | **GitHub Release** | La page d'une version sur GitHub, avec ses notes | Publication de secours des notes de version |
 | **Environnement GitHub** | Un nom de cible de déploiement (`production`), sur lequel on peut mettre des règles (validation manuelle) | Job `deploy` de la brique 2 |
 | **GitHub for Jira** | Application officielle Atlassian qui affiche branches, PR et déploiements GitHub dans les tickets | Partie native de la brique 2 |
+| **Diff** | La liste des lignes ajoutées et supprimées par une PR | Ce que la brique 3 compare aux critères |
+| **Critères d'acceptation** | Les conditions vérifiables qui disent quand un ticket est terminé | Lus par la brique 3 dans la description du ticket |
 | **fixVersion** | Le champ Jira "Version corrigée" : dans quelle version un ticket a été livré | Rempli par la brique 2 |
 | **Format storage** | Le format XHTML des pages Confluence, avec des macros (`info`, `warning`...) | Page de notes de version |
 | **MCP** | Protocole qui permet à un assistant IA d'agir dans un outil (ici, Claude dans Jira et Confluence) | Utilisé par Claude pour créer les tickets de démo |
@@ -286,6 +309,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `providers/anthropic_provider.py` | L'appel réel à Claude | Utilise le format de réponse structuré natif (`output_config`) |
 | `providers/fake_provider.py` | Le faux fournisseur pour les tests | Réponse prévisible, gratuite |
 | `prompts/smoke_test.md` | Prompt du test de bon fonctionnement | |
+| `prompts/pr_review.md` + `.schema.json` | Prompt de la revue de PR (modèle Sonnet) et format de sa réponse | |
 | `prompts/release_notes.md` + `.schema.json` | Prompt des notes de version (modèle Sonnet) et format de sa réponse | |
 | `prompts/triage.md` + `.schema.json` | Prompt du triage (v7) et format de sa réponse. L'en-tête fixe aussi `max_tokens: 4000` | |
 
@@ -303,6 +327,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | Script | Rôle | Commande |
 |---|---|---|
 | `smoke_test.py` | Vérifie la chaîne IA de bout en bout | `python -m scripts.smoke_test` |
+| `review_pr.py` | Brique 3 : revue d'une PR contre les critères du ticket, commentaire PR unique, commentaire Jira si le verdict change | `python -m scripts.review_pr --pr 14 [--dry-run]` |
 | `release_notes.py` | Brique 2 : notes de version d'une release, publication Confluence ou GitHub, version Jira et commentaires | `python -m scripts.release_notes --tag v1.1.0 [--dry-run]` |
 | `triage_ticket.py` | Brique 1 : triage d'un ticket. Envoie les candidats avec un extrait de description. Contient aussi `normalize()`, les règles métier appliquées par le code | `python -m scripts.triage_ticket PI-2 [--dry-run] [--force]` |
 | `demo_reset.py` | Supprime les tickets `poc-demo` et recrée le jeu de démo | `python -m scripts.demo_reset [--apply]` |
@@ -316,9 +341,10 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `.github/workflows/ci.yml` | Tests et lint à chaque push et PR |
 | `.github/workflows/ai-smoke-test.yml` | Smoke test manuel |
 | `.github/workflows/triage.yml` | Brique 1, déclenchée par Jira (`repository_dispatch`) ou à la main |
+| `.github/workflows/pr-review.yml` | Brique 3 : revue IA sur chaque PR (code de revue pris sur `main`) |
 | `.github/workflows/release.yml` | Brique 2 : sur un tag `v*`, tests, déploiement simulé, puis notes de version |
-| `app/paiement.py` | Application fictive pour les PR de démo (briques 2 et 3) |
-| `tests/` | 42 tests automatiques, dont le cas réel du balisage parasite rejoué |
+| `app/` | Application fictive pour les PR de démo : `paiement.py`, `export.py` (PI-4), `messages.py` (PI-3, brique 3) |
+| `tests/` | 49 tests automatiques, dont le cas réel du balisage parasite rejoué |
 
 ---
 
@@ -445,5 +471,5 @@ Je ne suis pas juriste, donc je ne m'engage pas sur la conformité. Ce que le PO
 - [ ] Passer la priorité par défaut du projet à **Moyenne**
 - [ ] Demander l'activation de Rovo à l'admin Atlassian de CBTW (facultatif) pour compléter la comparaison sur PI-10
 - [ ] Brique 4 : incident vers post-mortem (Jira Service Management est disponible sur la sandbox)
-- [ ] Brique 3 : revue IA des PR contre le ticket
+- [ ] Brique 3 : valider sur la PR de démo PI-3 (oubli de l'anglais, puis correctif)
 - [ ] Remplacer mon compte par un compte de service pour signer les commentaires (pour la version client)

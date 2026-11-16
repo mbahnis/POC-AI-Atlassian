@@ -75,7 +75,7 @@ flowchart LR
 - ❌ **Avant** : le développeur oublie de mettre à jour le ticket, les notes de version se rédigent à la main en fin de mois.
 - ✅ **Après** : branche ouverte = "En cours", PR ouverte = "En revue", PR fusionnée = "Terminé", déploiement = commentaire "Déployé en production, v1.4.2". La page de notes de version apparaît seule dans Confluence.
 
-### 3️⃣ Revue IA d'une PR contre le ticket *(bonus)*
+### 3️⃣ Revue IA d'une PR contre le ticket
 
 | | |
 |---|---|
@@ -205,5 +205,5 @@ docs/
 - [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
 - [x] Brique 1 : déclenchement automatique par Jira Automation validé (ticket créé, commentaire IA en ~30 s)
 - [x] Brique 2 : livraison tracée validée de bout en bout le 16/11 (statuts natifs, release v1.1.0, notes de version IA dans Confluence, version Jira) ([guide](docs/guides/brique-2-release.md))
-- [ ] Brique 4 : incident vers post-mortem
-- [ ] Brique 3 : revue IA des PR *(bonus)*
+- [x] Brique 3 : revue IA des PR contre les critères du ticket ([guide](docs/guides/brique-3-revue-pr.md)), en attente de validation réelle (PR de démo PI-3)
+- [ ] Brique 4 : incident vers post-mortem (projet Service Management dédié + page Post-mortems dans Confluence)
