@@ -15,6 +15,18 @@
       "type": "string",
       "description": "Le problème ou le besoin en 1 à 2 phrases"
     },
+    "composant": {
+      "type": "string",
+      "description": "Un des composants possibles, ou \"inconnu\" si impossible à déterminer"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 3,
+      "description": "0 à 3 labels parmi les labels possibles"
+    },
     "priorite": {
       "type": "string",
       "enum": [
@@ -27,21 +39,6 @@
     "justification_priorite": {
       "type": "string",
       "description": "Une phrase"
-    },
-    "composant": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Un des composants possibles, ou null si impossible à déterminer"
-    },
-    "labels": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "maxItems": 3,
-      "description": "0 à 3 labels parmi les labels possibles"
     },
     "doublons": {
       "type": "array",
@@ -89,10 +86,10 @@
     "qualite_ticket",
     "titre_reformule",
     "resume",
-    "priorite",
-    "justification_priorite",
     "composant",
     "labels",
+    "priorite",
+    "justification_priorite",
     "doublons",
     "criteres_acceptation",
     "questions_a_poser"

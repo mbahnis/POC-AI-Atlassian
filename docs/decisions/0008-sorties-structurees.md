@@ -37,3 +37,16 @@ Trois protections ont été ajoutées, du plus en amont au plus en aval :
 3. **Règles métier appliquées par le code** (`normalize` dans le script de triage) : composant et labels hors référentiel retirés, nombre de questions plafonné, note bornée. Le code a le dernier mot sur ce que l'IA a le droit d'écrire.
 
 Message pour les clients : on ne fait pas confiance aveuglément à la sortie d'un modèle, même structurée. On la contrôle comme n'importe quelle donnée entrante.
+
+## Mise à jour du 16/11/2026 (2) : abandon du tool use au profit du format de réponse natif
+
+Malgré le mode strict, le défaut est réapparu sur PI-11 (deux tentatives rejetées, toujours entre `justification_priorite` et `composant`). Le contrôle a joué son rôle (aucun commentaire faux publié), mais un triage en échec reste inacceptable en démo.
+
+**Cause racine** : en tool use, le modèle produit ses paramètres dans une syntaxe interne d'appel d'outil. Le petit modèle (Haiku) laisse parfois fuir cette syntaxe à l'intérieur d'un champ texte. Le mode strict ne l'empêche pas, car le résultat reste un JSON valide : le balisage est *dans* une chaîne de caractères.
+
+**Correction** :
+- utilisation du **format de réponse structuré natif** de l'API (`output_config.format` de type `json_schema`) : le modèle écrit directement le JSON contraint par le schéma, sans passer par la syntaxe d'outil ;
+- le champ `composant` n'accepte plus `null` (type unique `string`, valeur `inconnu` si rien ne convient), les champs sont réordonnés (classement d'abord, justification ensuite) ;
+- le contrôle et la relance restent en place comme filet de sécurité.
+
+**Leçon** : un garde-fou qui se déclenche est une information, pas seulement une protection. Le journal d'audit et les avertissements du run ont permis de localiser précisément le défaut.

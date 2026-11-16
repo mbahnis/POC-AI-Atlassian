@@ -6,9 +6,6 @@ import os
 from ..validation import to_strict_schema
 from .base import AIResponse
 
-# Nom de l'outil "virtuel" que Claude est obligé d'appeler pour rendre une réponse structurée
-STRUCTURED_TOOL = "rendre_resultat"
-
 
 class AnthropicProvider:
     name = "anthropic"
@@ -29,16 +26,12 @@ class AnthropicProvider:
     ) -> AIResponse:
         kwargs = {}
         if output_schema:
-            # Sortie structurée : on force l'appel d'un outil dont le schéma d'entrée est le format attendu.
-            # L'API garantit alors un JSON valide, sans souci de guillemets ou de texte parasite.
-            kwargs["tools"] = [{
-                "name": STRUCTURED_TOOL,
-                "description": "Transmet le résultat final de l'analyse.",
-                "input_schema": to_strict_schema(output_schema),
-                # strict : l'API contraint la génération au schéma (structured outputs)
-                "strict": True,
-            }]
-            kwargs["tool_choice"] = {"type": "tool", "name": STRUCTURED_TOOL}
+            # Sortie structurée native ("structured outputs") : la réponse est directement un JSON
+            # contraint par le schéma. Contrairement au détournement d'un outil (tool use), le modèle
+            # n'utilise pas sa syntaxe interne d'appel d'outil, qui fuyait parfois dans les textes.
+            kwargs["output_config"] = {
+                "format": {"type": "json_schema", "schema": to_strict_schema(output_schema)}
+            }
 
         msg = self._client.messages.create(
             model=model,
@@ -47,20 +40,16 @@ class AnthropicProvider:
             messages=[{"role": "user", "content": user}],
             **kwargs,
         )
+        text = "".join(block.text for block in msg.content if block.type == "text")
 
         data = None
-        text_parts = []
-        for block in msg.content:
-            if block.type == "text":
-                text_parts.append(block.text)
-            elif block.type == "tool_use" and block.name == STRUCTURED_TOOL:
-                data = dict(block.input)
-
-        if output_schema and data is None:
-            raise RuntimeError(f"Réponse structurée absente (stop_reason={msg.stop_reason})")
+        if output_schema:
+            if msg.stop_reason == "max_tokens":
+                raise RuntimeError("Réponse tronquée (max_tokens atteint) : augmenter AI_MAX_TOKENS")
+            data = json.loads(text)
 
         return AIResponse(
-            text=json.dumps(data, ensure_ascii=False) if data is not None else "".join(text_parts),
+            text=text,
             model=msg.model,
             input_tokens=msg.usage.input_tokens,
             output_tokens=msg.usage.output_tokens,
