@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -71,9 +71,17 @@ def test_alerte_repetee_commente_l_incident_ouvert():
     assert "statusCategory != Done" in jira.last_jql
 
 
-def test_chronologie_de_demo_lisible():
-    lines = yaml.safe_load((ROOT / "demo/alerts/memoire-saturee.chronologie.yaml").read_text(encoding="utf-8"))
-    assert len(lines) >= 4 and all(line[:2].isdigit() for line in lines)
+def test_chronologie_de_demo_coherente_avec_l_alerte():
+    entries = yaml.safe_load((ROOT / "demo/alerts/memoire-saturee.chronologie.yaml").read_text(encoding="utf-8"))
+    lines = io.render_timeline(entries, "2026-11-16T13:00:00Z")  # 14:00 à Paris
+    assert lines[0].startswith("14:05 ") and lines[-1].startswith("14:40 ")
+    assert "lancé à 13:52 par la logistique" in lines[3]
+    assert "{heure" not in " ".join(lines)
+
+
+def test_alerte_de_demo_demarre_45_minutes_avant():
+    payload = io.demo_start(json.loads(json.dumps(ALERT)), now=datetime(2026, 11, 20, 15, 0, tzinfo=UTC))
+    assert payload["alerts"][0]["startsAt"] == "2026-11-20T14:15:00Z"
 
 
 def test_duree_calculee_par_le_code():
@@ -96,8 +104,25 @@ def test_schema_et_principe_blameless():
     assert "Léa" not in json.dumps(nettoye, ensure_ascii=False)
 
 
+def test_durees_impact_et_totale():
+    description = "Contexte\n- Début de l'alerte : 2026-11-16T13:00:00Z\n"
+    history = [{"created": "2026-11-16T14:10:00.000+0100", "to": "En investigation"},
+               {"created": "2026-11-16T14:22:00.000+0100", "to": "Atténué"},
+               {"created": "2026-11-16T15:30:00.000+0100", "to": "Terminé"}]
+    durations = pm.compute_durations(description, "2026-11-16T14:01:00.000+0100", history,
+                                     "2026-11-16T15:30:00.000+0100")
+    assert durations == {"impact": "22 min", "totale": "1 h 30 min"}
+
+
+def test_plafond_actions_et_questions():
+    trop = dict(POSTMORTEM, actions=POSTMORTEM["actions"] * 8, questions_ouvertes=["q"] * 9)
+    propre = pm.normalize(trop)
+    assert len(propre["actions"]) == 5 and len(propre["questions_ouvertes"]) == 5
+
+
 def test_page_confluence():
-    page = pm.render_confluence(POSTMORTEM, "PIOPS-1", "https://jira.example", "2 h 05 min", "claude-sonnet")
-    assert "BROUILLON À RELIRE" in page and "2 h 05 min" in page
+    page = pm.render_confluence(POSTMORTEM, "PIOPS-1", "https://jira.example",
+                                {"impact": "22 min", "totale": "1 h 30 min"}, "claude-sonnet")
+    assert "BROUILLON À RELIRE" in page and "22 min" in page and "1 h 30 min" in page
     assert "<th>Responsable proposé</th>" in page and "aucun ticket n'a été créé" in page
     assert 'href="https://jira.example/browse/PIOPS-1"' in page

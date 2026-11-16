@@ -51,9 +51,11 @@ jobs:
           else
             if ! [[ "$SCENARIO" =~ ^[a-z0-9-]+$ ]]; then echo "::error::Scénario invalide"; exit 1; fi
             cp "demo/alerts/$SCENARIO.json" alert.json
+            TIMELINE="--demo"
             if [ "${{ inputs.chronologie }}" = "true" ]; then
-              echo "TIMELINE=--timeline demo/alerts/$SCENARIO.chronologie.yaml" >> "$GITHUB_ENV"
+              TIMELINE="--demo --timeline demo/alerts/$SCENARIO.chronologie.yaml"
             fi
+            echo "TIMELINE=$TIMELINE" >> "$GITHUB_ENV"
           fi
       - name: Créer ou mettre à jour l'incident
         run: python -m scripts.incident_open alert.json $TIMELINE

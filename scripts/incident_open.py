@@ -18,13 +18,19 @@ Variables : JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN, GITHUB_TOKEN, GITHUB_REPO
 import argparse
 import json
 import os
+import re
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import yaml
 
 from integrations import adf
 from integrations.jira_client import JiraClient
+
+TZ = ZoneInfo(os.environ.get("TZ_NAME", "Europe/Paris"))
+DEMO_ALERT_AGE = timedelta(minutes=45)
 
 # Correspondance gravité de l'alerte -> priorité Jira (noms de l'instance, ici en français)
 PRIORITIES = {"critical": "Critique", "high": "Haute", "warning": "Moyenne", "info": "Basse"}
@@ -56,6 +62,24 @@ def parse_alert(payload: dict) -> dict:
         "fingerprint": (first.get("fingerprint") or labels.get("alertname", "alerte"))[:12].lower(),
         "source": payload.get("externalURL", ""),
     }
+
+
+def demo_start(payload: dict, now: datetime | None = None) -> dict:
+    """Démo : l'alerte démarre 45 minutes avant le lancement, pour des dates cohérentes quel que soit le jour."""
+    start = ((now or datetime.now(UTC)) - DEMO_ALERT_AGE).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for alert in payload.get("alerts", []):
+        alert["startsAt"] = start
+    return payload
+
+
+def render_timeline(entries: list[dict], starts_at: str) -> list[str]:
+    """Démo : remplace {heure:N} par l'heure locale du début de l'alerte + N minutes."""
+    start = datetime.fromisoformat(starts_at).astimezone(TZ)
+
+    def heure(match: re.Match) -> str:
+        return (start + timedelta(minutes=int(match.group(1)))).strftime("%H:%M")
+
+    return [re.sub(r"\{heure:(-?\d+)\}", heure, e["texte"]) for e in sorted(entries, key=lambda e: e["apres"])]
 
 
 def last_deployment() -> dict | None:
@@ -135,16 +159,21 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("alert_file", help="fichier JSON de l'alerte (format webhook Alertmanager)")
     parser.add_argument("--timeline", help="démo : fichier YAML de commentaires simulant la réponse de l'équipe")
+    parser.add_argument("--demo", action="store_true", help="démo : l'alerte démarre 45 minutes avant maintenant")
     args = parser.parse_args()
 
-    alert = parse_alert(json.loads(Path(args.alert_file).read_text(encoding="utf-8")))
+    payload = json.loads(Path(args.alert_file).read_text(encoding="utf-8"))
+    if args.demo:
+        payload = demo_start(payload)
+    alert = parse_alert(payload)
     jira = JiraClient()
     project = os.environ.get("INCIDENT_PROJECT_KEY") or "PIOPS"
     issue_type = os.environ.get("INCIDENT_ISSUE_TYPE") or "Bug"
     key, created = open_or_update(alert, jira, project, issue_type)
 
     if args.timeline:
-        for line in yaml.safe_load(Path(args.timeline).read_text(encoding="utf-8")):
+        entries = yaml.safe_load(Path(args.timeline).read_text(encoding="utf-8"))
+        for line in render_timeline(entries, alert["starts_at"]):
             jira.add_comment(key, line)
 
     url = f"{os.environ['JIRA_BASE_URL'].rstrip('/')}/browse/{key}"

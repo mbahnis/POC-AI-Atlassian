@@ -20,6 +20,7 @@ Variables : ANTHROPIC_API_KEY, JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN,
 import argparse
 import html
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -27,6 +28,8 @@ from ai_core import ask, extract_json
 from integrations import adf
 from integrations.jira_client import JiraClient, adf_to_text
 
+MITIGATED_STATUSES = {"atténué", "attenue", "mitigated", "rétabli"}
+MAX_ITEMS = 5
 TYPES = {"prevention": "🛡️ Prévention", "detection": "🔎 Détection", "reponse": "🚒 Réponse"}
 PRIORITES = {"haute": "Haute", "moyenne": "Moyenne", "basse": "Basse"}
 CONFIANCE = {"forte": "Green", "moyenne": "Yellow", "faible": "Red"}
@@ -55,6 +58,36 @@ def duration_text(created: datetime | None, resolved: datetime | None) -> str:
     minutes = int((resolved - created).total_seconds() // 60)
     hours, mins = divmod(minutes, 60)
     return f"{hours} h {mins:02d} min" if hours else f"{mins} min"
+
+
+def alert_start(description_text: str) -> str | None:
+    """Début de l'alerte, écrit dans la description de l'incident par incident_open."""
+    match = re.search(r"Début de l'alerte : (\d{4}-\d{2}-\d{2}T[\d:]+Z)", description_text)
+    return match.group(1) if match else None
+
+
+def mitigation_date(history: list[dict]) -> str | None:
+    """Premier passage dans un statut "service rétabli" (ex. Atténué)."""
+    for h in history:
+        if (h["to"] or "").lower() in MITIGATED_STATUSES:
+            return h["created"]
+    return None
+
+
+def compute_durations(description_text: str, created: str, history: list[dict], resolved: str | None) -> dict:
+    """Durées calculées par le code : impact (début de l'alerte -> service rétabli) et totale (-> Terminé)."""
+    start = parse_jira_date(alert_start(description_text)) or parse_jira_date(created)
+    return {
+        "impact": duration_text(start, parse_jira_date(mitigation_date(history))),
+        "totale": duration_text(start, parse_jira_date(resolved)),
+    }
+
+
+def normalize(pm: dict) -> dict:
+    """Le code a le dernier mot : 5 actions et 5 questions au plus (l'IA les classe par importance)."""
+    pm["actions"] = pm.get("actions", [])[:MAX_ITEMS]
+    pm["questions_ouvertes"] = pm.get("questions_ouvertes", [])[:MAX_ITEMS]
+    return pm
 
 
 def resolution_date(fields: dict, history: list[dict]) -> str | None:
@@ -90,7 +123,7 @@ def scrub_names(value, names: set[str]):
     return value
 
 
-def render_confluence(pm: dict, key: str, jira_url: str, duration: str, model: str) -> str:
+def render_confluence(pm: dict, key: str, jira_url: str, durations: dict, model: str) -> str:
     e = html.escape
 
     def macro(name: str, inner: str) -> str:
@@ -107,7 +140,8 @@ def render_confluence(pm: dict, key: str, jira_url: str, duration: str, model: s
     cause = pm["cause_probable"]
     out = [
         (f"<p>{status('BROUILLON À RELIRE', 'Yellow')} Incident "
-         f'<a href="{jira_url}/browse/{key}">{key}</a> · Durée : <strong>{e(duration)}</strong></p>'),
+         f'<a href="{jira_url}/browse/{key}">{key}</a> · Durée d\'impact : <strong>{e(durations["impact"])}</strong>'
+         f" · Durée totale : {e(durations['totale'])}</p>"),
         macro("info", f"<p><strong>{e(pm['resume'])}</strong></p>"),
         "<h2>Impact</h2>", f"<p>{e(pm['impact'])}</p>",
         "<h2>Chronologie</h2><table><tbody><tr><th>Heure</th><th>Événement</th></tr>"
@@ -155,14 +189,17 @@ def main() -> int:
     comments = jira.get_comments(key)
     history = jira.get_status_history(key)
     created, resolved_raw = f["created"], resolution_date(f, history)
-    duration = duration_text(parse_jira_date(created), parse_jira_date(resolved_raw))
+    description = adf_to_text(f.get("description")) or "(vide)"
+    durations = compute_durations(description, created, history, resolved_raw)
+    duration = (f"impact {durations['impact']} (début de l'alerte -> service rétabli), "
+                f"totale {durations['totale']} (début de l'alerte -> incident terminé)")
 
     response = ask(
         "postmortem",
         {
             "key": key, "summary": f["summary"], "priority": (f.get("priority") or {}).get("name", "?"),
             "status": f["status"]["name"], "created": created, "resolved": resolved_raw or "non résolu",
-            "duration": duration, "description": adf_to_text(f.get("description")) or "(vide)",
+            "duration": duration, "description": description,
             "comments": "\n".join(f"- [{c['created']}] {c['text']}" for c in comments) or "(aucun)",
             "status_history": "\n".join(f"- [{h['created']}] {h['from']} -> {h['to']}" for h in history) or "(aucun)",
             "deployments": recent_deployments(),
@@ -170,10 +207,10 @@ def main() -> int:
         caller=f"postmortem:{key}",
     )
     pm = response.data if response.data is not None else extract_json(response.text)
-    pm = scrub_names(pm, {c["author"] for c in comments} | {h["author"] for h in history})
+    pm = normalize(scrub_names(pm, {c["author"] for c in comments} | {h["author"] for h in history}))
 
     jira_url = os.environ["JIRA_BASE_URL"].rstrip("/")
-    page = render_confluence(pm, key, jira_url, duration, response.model)
+    page = render_confluence(pm, key, jira_url, durations, response.model)
     with open("postmortem.html", "w", encoding="utf-8") as out:
         out.write(page)
     print(f"Post-mortem {key} : {pm['titre']}\n{pm['resume']}\nDurée : {duration}")

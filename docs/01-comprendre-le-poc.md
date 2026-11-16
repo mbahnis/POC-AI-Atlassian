@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Pour qui ?** Un collègue qui a vu le POC et veut comprendre ce qu'il fait, pourquoi il est construit ainsi et comment le réutiliser chez un client.
-> **Mis à jour le** 16/11/2026 : briques 1 (triage IA), 2 (livraison tracée) et 3 (revue de PR) validées en conditions réelles ; brique 4 (post-mortem) construite, en cours de validation.
+> **Mis à jour le** 16/11/2026 : briques 1 (triage IA), 2 (livraison tracée) et 3 (revue de PR) validées en conditions réelles ; brique 4 (post-mortem) validée elle aussi : les 4 briques fonctionnent de bout en bout.
 
 ---
 
@@ -20,7 +20,7 @@ Les équipes IT des grands comptes perdent du temps sur les mêmes irritants :
 | Statuts Jira décorrélés du code et des déploiements | Personne ne sait ce qui est réellement livré | 🚀 **2. Jira + CI/CD** ✅ |
 | Release notes écrites à la main, en retard | Documentation fausse ou absente | 🚀 **2. Jira + CI/CD** ✅ |
 | Code qui ne fait pas ce que le ticket demandait | Oublis découverts en recette | 🔍 **3. Revue IA des PR** ✅ |
-| Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 **4. Incident vers post-mortem** 🔄 |
+| Post-mortems écrits des jours après, ou jamais | On refait les mêmes erreurs | 📚 **4. Incident vers post-mortem** ✅ |
 
 ## 3. Ce qui fonctionne aujourd'hui
 
@@ -71,13 +71,15 @@ Questions       5 questions précises à poser à l'auteur
 > [!NOTE]
 > La revue IA ne juge ni le style ni l'architecture et **ne bloque pas** la fusion : elle complète la revue humaine sur la seule question "le code fait-il ce que demande le ticket ?".
 
-### 📚 Brique 4 : de l'alerte au post-mortem (en cours de validation)
+### 📚 Brique 4 : de l'alerte au post-mortem
 
 **Ce que voit l'astreinte :** une alerte de supervision crée un incident dans Jira, avec le service touché, la gravité, la procédure et le **dernier déploiement** (souvent la première piste). L'équipe commente ses actions dans l'incident.
 
 **Ce que voit l'équipe le lendemain :** dès que l'incident passe "Terminé", un **brouillon de post-mortem** apparaît dans Confluence : résumé, durée, chronologie, cause probable avec un niveau de confiance, actions correctives proposées et questions à trancher en revue.
 
 **Ce que ça change :** on passe d'une page blanche (ou d'un post-mortem jamais écrit) à 10 minutes de relecture.
+
+**Validé le 16/11 (PIOPS-1) :** l'alerte a créé l'incident avec le dernier déploiement en contexte ; à la clôture, le brouillon était dans Confluence en moins de 2 minutes. Aucun prénom cité dans les commentaires n'apparaît dans le post-mortem, et l'IA a d'elle-même distingué la durée du ticket de la durée réelle de l'impact.
 
 > [!NOTE]
 > Le post-mortem est **"blameless"** (aucune personne n'est mise en cause) et reste un **brouillon** : l'IA ne crée aucun ticket d'action, l'équipe décide. Sur notre sandbox, Jira Service Management n'est pas activé : les incidents vivent dans un projet Jira dédié (`PIOPS`), et basculer vers JSM ne demande que deux réglages.

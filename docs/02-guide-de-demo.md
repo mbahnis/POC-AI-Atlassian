@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
 > **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) validée le 16/11 (PR #15). Brique 4 (post-mortem) scénarisée, **à répéter avant tout usage client**. Briques 3 et 4 à venir.
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) validée le 16/11 (release `v1.1.0`). Brique 3 (revue de PR) validée le 16/11 (PR #15). Brique 4 (post-mortem) validée le 16/11 (PIOPS-1). Briques 3 et 4 à venir.
 
 ---
 
@@ -168,8 +168,11 @@
 
 ## 2️⃣ quater. De l'alerte au post-mortem (4 min)
 
-> [!WARNING]
-> Séquence à jouer après une répétition (voir le [guide de la brique 4](guides/brique-4-incident-postmortem.md#rejouer-la-démo)). Pour gagner du temps, déclencher l'alerte **avant** le rendez-vous : l'incident et sa chronologie seront prêts.
+> [!IMPORTANT]
+> **À préparer juste avant le rendez-vous :** lancer **Actions > Brique 4 - Alerte vers incident** (chronologie cochée). L'alerte est datée de 45 minutes avant le lancement, et la chronologie de l'astreinte est calée dessus. Passer ensuite l'incident à **En investigation** puis **Atténué** : la durée d'impact sera calculée sur ce passage.
+
+> [!TIP]
+> Plan B : le post-mortem de **PIOPS-1** est déjà publié dans Confluence (espace POC IA > Post-mortems).
 
 ### Étape 4.1 : l'alerte devient un incident
 
@@ -190,9 +193,9 @@
 | Point | À dire |
 |---|---|
 | Le statut "BROUILLON À RELIRE" | "C'est un brouillon : l'équipe relit et corrige en 10 minutes au lieu de partir de zéro." |
-| La durée | "Calculée par le code à partir de Jira, pas estimée par l'IA." |
+| Les durées d'impact et totale | "Calculées par le code : du début de l'alerte jusqu'au service rétabli, puis jusqu'à la clôture. Pas estimées par l'IA." |
 | La cause probable et sa confiance | "Une hypothèse, avec les faits qui l'appuient. L'équipe confirme en revue." |
-| Aucun nom de personne | "Post-mortem sans recherche de coupable : des rôles, pas des personnes." |
+| Aucun nom de personne | "Les commentaires citaient des prénoms : le post-mortem n'en contient aucun. Des rôles, pas des personnes." |
 | Les actions proposées | "Proposées, pas créées : l'équipe choisit lesquelles devenir des tickets." |
 
 ---

@@ -113,13 +113,15 @@
           "priorite",
           "responsable"
         ]
-      }
+      },
+      "maxItems": 5
     },
     "questions_ouvertes": {
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "maxItems": 5
     }
   },
   "required": [
