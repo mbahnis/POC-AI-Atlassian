@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Moi. Ce document me permet de tout retrouver : ce qu'on a fait, dans quel ordre, pourquoi, ce qui a cassé et ce que ça nous a appris.
 > **Comment le lire ?** La partie 1 donne la vue d'ensemble. La partie 2 raconte le projet dans l'ordre. Les parties suivantes sont des références (glossaire, fichiers, accès, dépannage, questions pièges).
-> **Dernière mise à jour :** 16/11/2026.
+> **Dernière mise à jour :** 16/11/2026 (brique 2 construite, en cours de validation).
 
 ## Sommaire
 
@@ -39,7 +39,7 @@ flowchart LR
     B --> C[💻 Code et PR]
     C -->|Brique 3| D[🔍 Revue IA vs ticket]
     D --> E[🚀 Déploiement]
-    E -->|Brique 2| F[📄 Release notes Confluence]
+    E -->|Brique 2 🔄| F[📄 Release notes Confluence]
     E --> G[⚠️ Incident]
     G -->|Brique 4| H[📚 Post-mortem Confluence]
 ```
@@ -181,6 +181,38 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 > [!WARNING]
 > Ne pas présenter cette comparaison comme un "match gagné". La qualité réelle de Rovo n'a pas été testée. Le bon discours : "Rovo pour le standard, notre approche quand vous voulez maîtriser les règles, les données et le lien avec la CI/CD."
 
+### 📅 16/11/2026 : brique 2, la livraison tracée
+
+**Objectif :** relier le code, le déploiement et la documentation sans ressaisie.
+
+**Le découpage, et pourquoi :**
+
+| Partie | Qui la fait | Pourquoi |
+|---|---|---|
+| Afficher branches, PR et déploiements dans Jira | **Natif** : application GitHub for Jira | Ça existe, c'est maintenu par Atlassian, c'est inclus |
+| Statut En cours / Terminé | **Natif** : 2 flux Automation (branche créée, PR fusionnée) | Pas une ligne de code |
+| Déploiement | GitHub Actions, job `deploy` dans l'environnement `production` | Simulé pour le POC ; l'environnement nommé fait remonter le déploiement dans Jira |
+| Notes de version | **Ce POC** : `scripts/release_notes.py` + prompt `release_notes` (Sonnet) | Le natif ne sait pas rédiger |
+| Version Jira (`fixVersion`) et commentaire "Livré" | **Ce POC** | Le natif ne relie pas une release GitHub à une version Jira |
+
+**Comment le script retrouve ce qui est livré :**
+1. Il prend le tag précédent (`v1.0.0`) et le nouveau (`v1.1.0`).
+2. Il liste les commits entre les deux et en déduit les PR fusionnées (messages "Merge pull request #12" ou "Titre (#12)").
+3. Dans chaque PR, il cherche les clés de tickets (`PI-1`) dans la branche, le titre et la description.
+4. Il lit ces tickets dans Jira, envoie le tout à l'IA (données masquées), puis **retire toute référence que l'IA citerait sans qu'elle existe**.
+
+**Choix notables :**
+- **Publication interchangeable** : Confluence si `CONFLUENCE_SPACE_KEY` est défini, sinon GitHub Release ([décision 0009](decisions/0009-release-notes-publication-interchangeable.md)).
+- **Premier tag = référence** : `v1.0.0` ne produit pas de notes, sinon l'IA résumerait tout l'historique du POC.
+- **Appli fictive** `app/paiement.py` : elle ne sert qu'à avoir du vrai code à modifier dans les PR de démo. Volontairement, ses messages d'erreur sont **uniquement en français** : c'est l'oubli que la brique 3 détectera face au ticket PI-3.
+
+**Blocages rencontrés :**
+- Confluence répondait en **404** : il n'existe pas sur le site sandbox de Jira (`one-atlas-bfqf-sandbox`), mais sur le **site principal partagé** `one-atlas-bfqf` (où mes collègues ont leurs espaces). Décision prise avec moi : créer un **espace dédié `POCIA`** sur ce site et n'écrire que dedans. Le code accepte un site Confluence différent du site Jira (`CONFLUENCE_BASE_URL`), ce qui arrivera aussi chez des clients.
+- "GitHub for Jira" s'appelle désormais **GitHub for Atlassian**. Le Marketplace contient plusieurs applications tierces aux noms proches : prendre celle éditée par Atlassian.
+- L'administration Jira signale que **ScriptRunner** tourne sur une plateforme **non prise en charge après janvier 2027**. Argument de plus pour ne pas en dépendre.
+
+**État :** code et tests prêts (42 tests). Reste à faire de mon côté : installer GitHub for Jira, créer les 2 flux de statut, vérifier Confluence, puis répéter le scénario complet.
+
 ---
 
 ## 3. Glossaire
@@ -204,6 +236,12 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | **Fine-grained token** | Token GitHub limité à certains dépôts et certains droits | Celui du flux Jira |
 | **Flux** (Jira Automation) | Une règle d'automatisation : déclencheur, conditions, actions | `IA - Triage à la création` |
 | **Rovo** | L'IA intégrée d'Atlassian (recherche, agents) | Comparaison en cours |
+| **Tag** | Une étiquette posée sur un état du code, en général un numéro de version | `v1.1.0` déclenche la brique 2 |
+| **GitHub Release** | La page d'une version sur GitHub, avec ses notes | Publication de secours des notes de version |
+| **Environnement GitHub** | Un nom de cible de déploiement (`production`), sur lequel on peut mettre des règles (validation manuelle) | Job `deploy` de la brique 2 |
+| **GitHub for Jira** | Application officielle Atlassian qui affiche branches, PR et déploiements GitHub dans les tickets | Partie native de la brique 2 |
+| **fixVersion** | Le champ Jira "Version corrigée" : dans quelle version un ticket a été livré | Rempli par la brique 2 |
+| **Format storage** | Le format XHTML des pages Confluence, avec des macros (`info`, `warning`...) | Page de notes de version |
 | **MCP** | Protocole qui permet à un assistant IA d'agir dans un outil (ici, Claude dans Jira et Confluence) | Utilisé par Claude pour créer les tickets de démo |
 | **Fiche de décision** (ADR) | Une page courte qui explique un choix d'architecture | `docs/decisions/` |
 | **CI** | Intégration continue : les tests tournent automatiquement à chaque modification | `.github/workflows/ci.yml` |
@@ -226,6 +264,7 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `providers/anthropic_provider.py` | L'appel réel à Claude | Utilise le format de réponse structuré natif (`output_config`) |
 | `providers/fake_provider.py` | Le faux fournisseur pour les tests | Réponse prévisible, gratuite |
 | `prompts/smoke_test.md` | Prompt du test de bon fonctionnement | |
+| `prompts/release_notes.md` + `.schema.json` | Prompt des notes de version (modèle Sonnet) et format de sa réponse | |
 | `prompts/triage.md` + `.schema.json` | Prompt du triage (v7) et format de sa réponse. L'en-tête fixe aussi `max_tokens: 4000` | |
 
 ### `integrations/` : les bras
@@ -234,12 +273,15 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 |---|---|
 | `jira_client.py` | Lire un ticket, chercher (JQL), créer, commenter, ajouter un label, supprimer. Conversion texte vers ADF et inversement |
 | `adf.py` | Petits constructeurs pour des commentaires jolis (encadré, titres, listes, gras) |
+| `github_client.py` | Retrouver les PR fusionnées entre deux tags, extraire les clés de tickets, créer ou mettre à jour une GitHub Release |
+| `confluence_client.py` | Créer ou mettre à jour une page Confluence (API v2, format storage) |
 
 ### `scripts/` : ce qu'on exécute
 
 | Script | Rôle | Commande |
 |---|---|---|
 | `smoke_test.py` | Vérifie la chaîne IA de bout en bout | `python -m scripts.smoke_test` |
+| `release_notes.py` | Brique 2 : notes de version d'une release, publication Confluence ou GitHub, version Jira et commentaires | `python -m scripts.release_notes --tag v1.1.0 [--dry-run]` |
 | `triage_ticket.py` | Brique 1 : triage d'un ticket. Envoie les candidats avec un extrait de description. Contient aussi `normalize()`, les règles métier appliquées par le code | `python -m scripts.triage_ticket PI-2 [--dry-run] [--force]` |
 | `demo_reset.py` | Supprime les tickets `poc-demo` et recrée le jeu de démo | `python -m scripts.demo_reset [--apply]` |
 
@@ -252,7 +294,9 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | `.github/workflows/ci.yml` | Tests et lint à chaque push et PR |
 | `.github/workflows/ai-smoke-test.yml` | Smoke test manuel |
 | `.github/workflows/triage.yml` | Brique 1, déclenchée par Jira (`repository_dispatch`) ou à la main |
-| `tests/` | 34 tests automatiques, dont le cas réel du balisage parasite rejoué |
+| `.github/workflows/release.yml` | Brique 2 : sur un tag `v*`, tests, déploiement simulé, puis notes de version |
+| `app/paiement.py` | Application fictive pour les PR de démo (briques 2 et 3) |
+| `tests/` | 42 tests automatiques, dont le cas réel du balisage parasite rejoué |
 
 ---
 
@@ -263,6 +307,9 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 | Clé API Anthropic | Secret GitHub `ANTHROPIC_API_KEY` | Moi, sur console.anthropic.com (limite 5 $) | Appeler Claude | Révoquer |
 | Token API Atlassian | Secret GitHub `JIRA_API_TOKEN` (+ `JIRA_EMAIL`) | Moi, sur id.atlassian.com | Lire et écrire dans Jira avec mes droits | Révoquer |
 | URL Jira | Variable GitHub `JIRA_BASE_URL` | | `https://one-atlas-bfqf-sandbox.atlassian.net` | |
+| Espace Confluence | Variables GitHub `CONFLUENCE_SPACE_KEY` (`POCIA`), `CONFLUENCE_PARENT_TITLE`, `CONFLUENCE_BASE_URL` (`https://one-atlas-bfqf.atlassian.net`) | | Où publier les notes (sinon GitHub Release) | Supprimer l'espace POCIA si besoin |
+| GitHub for Atlassian | App installée sur le site sandbox, reliée au dépôt | Moi | Branches, PR, déploiements visibles dans Jira | Désinstaller si besoin |
+| `GITHUB_TOKEN` | Fourni automatiquement par GitHub Actions | GitHub | Lire les PR, créer la Release (droit `contents: write` dans le workflow) | Rien à faire |
 | Token GitHub fine-grained | En-tête du flux Jira Automation | Moi, sur GitHub | Déclencher un workflow sur ce dépôt uniquement | Révoquer |
 | App GitHub "Claude" | Installée sur le dépôt | Moi | Claude pousse des branches et ouvre des PR | Désinstaller si besoin |
 | Connecteur Atlassian (MCP) | claude.ai | Moi (OAuth) | Claude lit et écrit dans Jira/Confluence avec mes droits | Déconnecter si besoin |
@@ -305,6 +352,9 @@ PI-1 à PI-8 portent le label `poc-demo` : ce sont ceux que `demo_reset` supprim
 | Conflit sur le README dans VS Code | Branche créée sans avoir fait un pull de `main` | Toujours faire **Pull** sur `main` avant de créer une branche |
 | "Merge already in progress" | La PR n'avait plus rien à fusionner | Rafraîchir ; si la PR est vide, la fermer |
 | "Rovo... administrateur doit activer Rovo AI" | Rovo non activé sur l'organisation | Demande à l'admin Atlassian de CBTW |
+| Erreur 404 sur Confluence | Confluence non activé sur le site | Vérifier `/wiki` ; sans Confluence, laisser `CONFLUENCE_SPACE_KEY` vide (publication GitHub Release) |
+| "Aucune PR fusionnée" à la release | Commits poussés directement sans PR, ou mauvais tag de départ | Passer par des PR ; relancer avec `--base` |
+| Pas de notes au premier tag | Comportement voulu : le premier tag sert de référence | Créer un second tag |
 
 ---
 
@@ -371,7 +421,7 @@ Je ne suis pas juriste, donc je ne m'engage pas sur la conformité. Ce que le PO
 
 - [ ] Passer la priorité par défaut du projet à **Moyenne**
 - [ ] Demander l'activation de Rovo à l'admin Atlassian de CBTW (facultatif) pour compléter la comparaison sur PI-10
-- [ ] **Brique 2** : Jira + CI/CD, release notes générées par l'IA dans Confluence
+- [ ] **Brique 2** : installer GitHub for Jira, créer les 2 flux de statut, vérifier Confluence, poser `v1.0.0`, répéter le scénario complet
 - [ ] Brique 4 : incident vers post-mortem (Jira Service Management est disponible sur la sandbox)
 - [ ] Brique 3 : revue IA des PR contre le ticket
 - [ ] Remplacer mon compte par un compte de service pour signer les commentaires (pour la version client)

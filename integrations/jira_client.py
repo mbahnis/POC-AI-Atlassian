@@ -89,5 +89,19 @@ class JiraClient:
         body = {"update": {"labels": [{"add": label} for label in labels]}}
         self._check(self.session.put(self._url(f"issue/{key}"), json=body))
 
+    def ensure_version(self, project_key: str, name: str, released: bool, release_date: str) -> dict:
+        """Crée la version Jira (ex. v1.4.2) si elle n'existe pas, et la marque livrée."""
+        project = self._check(self.session.get(self._url(f"project/{project_key}"))).json()
+        versions = self._check(self.session.get(self._url(f"project/{project_key}/versions"))).json()
+        existing = next((v for v in versions if v["name"] == name), None)
+        body = {"name": name, "released": released, "releaseDate": release_date}
+        if existing:
+            return self._check(self.session.put(self._url(f"version/{existing['id']}"), json=body)).json()
+        return self._check(self.session.post(self._url("version"), json={**body, "projectId": project["id"]})).json()
+
+    def add_fix_version(self, key: str, version_name: str) -> None:
+        body = {"update": {"fixVersions": [{"add": {"name": version_name}}]}}
+        self._check(self.session.put(self._url(f"issue/{key}"), json=body))
+
     def delete_issue(self, key: str) -> None:
         self._check(self.session.delete(self._url(f"issue/{key}"), params={"deleteSubtasks": "true"}))

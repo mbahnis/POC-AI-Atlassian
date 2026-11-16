@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Pour qui ?** Le présentateur, pendant un rendez-vous client.
 > **Comment l'utiliser ?** Le déroulé principal se lit de haut en bas. Les sections dépliables **"🙋 Si le client demande..."** ne se jouent que si la question arrive.
-> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Briques 2 à 4 à venir.
+> **Mis à jour le** 16/11/2026 : brique 1 (triage IA) prête et répétée en conditions réelles (PI-11). Brique 2 (livraison tracée) scénarisée, **à répéter avant tout usage client**. Briques 3 et 4 à venir.
 
 ---
 
@@ -88,6 +88,39 @@
 
 ---
 
+## 2️⃣ bis. Livraison tracée (4 min, optionnel tant que la brique 2 n'est pas répétée)
+
+> [!WARNING]
+> Séquence à jouer seulement après une répétition complète (voir le [guide de la brique 2](guides/brique-2-release.md#rejouer-la-démo)). Préparer à l'avance une branche `PI-1-erreur-500-paiement` avec une PR ouverte, prête à être fusionnée.
+
+### Étape 2.1 : le ticket suit le code, tout seul
+
+**À faire :** ouvrir PI-1 dans Jira, montrer le panneau **Développement** (branche et PR liées), puis fusionner la PR sur GitHub et rafraîchir PI-1.
+
+**À dire :**
+> "Le développeur n'a rien mis à jour dans Jira. Il a juste mis la clé du ticket dans le nom de sa branche. Le ticket est passé En cours à la création de la branche, et Terminé à la fusion. Tout ça, c'est du **natif Atlassian** : votre licence le fait déjà, on l'a simplement branché."
+
+### Étape 2.2 : la release documente elle-même
+
+**À faire :** publier la release `v1.1.0` sur GitHub (Releases > Draft a new release), montrer le workflow qui se lance, puis ouvrir la page de notes de version et revenir sur PI-1.
+
+**À dire pendant l'attente (environ 1 min) :**
+> "On déploie. Pendant ce temps, l'IA lit les PR fusionnées depuis la dernière version et les tickets qu'elles citent, et elle rédige les notes de version pour vos métiers, pas pour les développeurs."
+
+**À pointer sur la page :**
+
+| Point | À dire |
+|---|---|
+| Le résumé en haut | "Lisible par le support et le produit, sans jargon." |
+| Les catégories (nouveautés, corrections, technique) | "Classées automatiquement." |
+| Les liens vers les tickets et PR | "Chaque ligne est traçable. L'IA ne peut citer que ce qui existe réellement." |
+| Dans PI-1 : version `v1.1.0` et commentaire "Livré" | "Le support sait immédiatement dans quelle version le bug est corrigé." |
+
+**Phrase de transition :**
+> "Fini les statuts oubliés et les release notes écrites le vendredi soir : le code, le ticket et la documentation restent alignés."
+
+---
+
 ## 2️⃣ Les garde-fous (2 min)
 
 **À dire, en montrant le commentaire :**
@@ -169,6 +202,27 @@
 > "Une fraction de centime par ticket. Chaque appel est tracé avec sa consommation, donc vous connaissez le coût réel au centime près. Pour 1 000 tickets par mois, on parle de quelques euros."
 
 **À montrer (si besoin) :** l'artefact `ai-audit-log` d'un run GitHub Actions : tokens consommés, modèle, version du prompt.
+</details>
+
+<details>
+<summary><b>"On n'utilise pas Confluence pour nos release notes"</b></summary>
+
+**À dire :**
+> "Aucun problème : la publication est interchangeable. Sans Confluence, les notes vont dans la release GitHub ; on peut aussi les envoyer vers votre wiki, SharePoint ou un canal Teams. Le cœur ne change pas."
+</details>
+
+<details>
+<summary><b>"Et si un développeur oublie la clé du ticket ?"</b></summary>
+
+**À dire :**
+> "Sa PR n'est rattachée à aucun ticket : elle apparaît quand même dans les notes, mais sans lien Jira. On peut ajouter un contrôle dans la CI qui bloque une PR sans clé de ticket : c'est une règle simple qui améliore la traçabilité de toute l'équipe."
+</details>
+
+<details>
+<summary><b>"Le déploiement, c'est un vrai déploiement ?"</b></summary>
+
+**À dire :**
+> "Dans la démo, il est simulé. Chez vous, on branche votre vraie chaîne : Terraform, Helm, ArgoCD... Ce qui compte, c'est que le déploiement soit déclaré dans un environnement nommé, ce qui le fait remonter dans Jira, et qu'on puisse y ajouter une validation manuelle avant la production."
 </details>
 
 <details>

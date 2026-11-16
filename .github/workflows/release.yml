@@ -1,0 +1,92 @@
+name: Brique 2 - Release
+
+# Se déclenche quand on pousse un tag de version (ex. v1.1.0), ou à la main pour rejouer une release.
+# 1. "deploy" : déploiement (simulé pour le POC) dans l'environnement GitHub "production".
+#    Avec l'application GitHub for Jira, ce déploiement apparaît nativement dans les tickets concernés.
+# 2. "release-notes" : notes de version générées par l'IA, publiées dans Confluence (ou la GitHub Release),
+#    version Jira créée et rattachée aux tickets livrés.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de version à (re)publier (ex. v1.1.0)"
+        required: true
+      dry_run:
+        description: "Générer sans rien publier"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # créer ou mettre à jour la GitHub Release
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Tests avant déploiement
+        run: pytest -q
+      - name: Déploiement (simulé pour le POC)
+        run: |
+          echo "Déploiement de $RELEASE_TAG en production..."
+          echo "Chez un client : terraform apply, helm upgrade, argocd sync, etc."
+          echo "## 🚀 $RELEASE_TAG déployée en production (simulation)" >> "$GITHUB_STEP_SUMMARY"
+
+  release-notes:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+      JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY || 'PI' }}
+      # Sans cette variable, les notes sont publiées dans la GitHub Release au lieu de Confluence
+      CONFLUENCE_SPACE_KEY: ${{ vars.CONFLUENCE_SPACE_KEY }}
+      # Site Confluence s'il diffère du site Jira (sinon laisser vide)
+      CONFLUENCE_BASE_URL: ${{ vars.CONFLUENCE_BASE_URL }}
+      CONFLUENCE_PARENT_TITLE: ${{ vars.CONFLUENCE_PARENT_TITLE }}
+      AI_MODEL_SMART: ${{ vars.AI_MODEL_SMART || 'claude-sonnet-5-5' }}
+      DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+    steps:
+      - name: Valider le tag
+        run: |
+          if ! [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag invalide : '$RELEASE_TAG' (attendu : vX.Y.Z)"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Notes de version IA
+        run: python -m scripts.release_notes --tag "$RELEASE_TAG" $DRY_RUN
+      - name: Publier les notes et le journal d'audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ env.RELEASE_TAG }}
+          path: |
+            release-notes.md
+            ai-audit.jsonl
+          if-no-files-found: ignore

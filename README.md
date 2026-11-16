@@ -161,6 +161,7 @@ flowchart LR
 ## 📂 Structure du dépôt
 
 ```
+app/                  Application fictive "Maison Lumen" (matière pour les PR et releases de démo)
 config/               Référentiel propre au client (composants, labels)
 ai_core/              Module IA commun : prompts, masquage, fournisseurs, audit
   prompts/            Prompts versionnés (un fichier par usage)
@@ -203,7 +204,7 @@ docs/
 - [x] Premier appel à Claude validé en CI (smoke test)
 - [x] Brique 1 : triage IA, code et workflow ([guide](docs/guides/brique-1-triage.md))
 - [x] Brique 1 : déclenchement automatique par Jira Automation validé (ticket créé, commentaire IA en ~30 s)
-- [ ] Espace Confluence de test
-- [ ] Brique 2 : Jira + CI/CD
+- [x] Brique 2 : notes de version IA, versions Jira, workflow de release ([guide](docs/guides/brique-2-release.md)), en attente de validation réelle
+- [ ] Brique 2 : GitHub for Jira + flux de statut (natif), espace Confluence de test
 - [ ] Brique 4 : incident vers post-mortem
 - [ ] Brique 3 : revue IA des PR *(bonus)*
