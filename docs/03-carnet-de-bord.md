@@ -318,6 +318,16 @@ C'est la partie la plus instructive du projet. Chaque essai réel a révélé un
 
 **Effet de bord repéré sur la PR de finition (#19) :** sa description citait "PIOPS-1" pour contexte. La revue de PR (brique 3) l'a donc rattachée à l'incident, a comparé le code aux "critères" de l'incident et a commenté PIOPS-1. Correction : la revue ne retient que le ticket cité dans le **nom de branche** ou le **titre** de la PR ; la description peut mentionner d'autres tickets sans conséquence.
 
+### 📅 16/11/2026 : répétition de la démo de bout en bout
+
+**Scénario retenu** (guide de démo réécrit) : triage d'un ticket flou (brique 1), puis une story **"Appliquer un code promo au panier"** dont la branche contient un **oubli volontaire** (codes expirés acceptés), revue IA qui le trouve, **correction en direct depuis le navigateur**, revue qui passe au vert (brique 3), fusion puis release qui publie les notes de version (brique 2). Le post-mortem (brique 4) passe en annexe.
+
+**Pourquoi ce ticket plutôt que PI-3 :** ses 5 critères sont tous vérifiables dans le code (pas d'interface), donc l'IA peut honnêtement conclure "conforme" après la correction.
+
+**Répétition :** triage de PI-13 réussi (PI-2 en doublon fort), revue de la PR #20 (PI-12) réussie (❌ code expiré absent, 4 critères ✅, "Points à compléter" dans Jira).
+
+**Remise à zéro entre deux démos** (faite par Claude via le connecteur Jira et Git) : clôture des tickets de la démo précédente (sinon ils deviennent des doublons), nouveau ticket "code promo", nouvelle branche avec l'oubli volontaire, PR précédente fermée sans fusion. Les priorités de la sandbox sont en anglais (Medium, High...) sauf "Critique", qui est la valeur par défaut : on choisit Medium à la création.
+
 ---
 
 ## 3. Glossaire
